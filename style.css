@@ -1,195 +1,256 @@
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Poppins', sans-serif; /* Nueva fuente */
     display: flex;
     justify-content: center;
     align-items: flex-start;
     min-height: 100vh;
-    background-color: #f4f7f6;
+    background-color: #f8f9fa; /* Fondo gris muy claro */
     margin: 0;
-    padding: 20px; /* Espacio general */
-    color: #333;
+    padding: 30px 20px; /* Más padding arriba */
+    color: #343a40; /* Gris oscuro para texto */
     line-height: 1.6;
+    overflow-x: hidden; /* Evitar scroll horizontal por animaciones */
 }
 
 .container {
     text-align: center;
     background-color: #ffffff;
-    padding: 25px 35px;
-    border-radius: 12px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    padding: 30px 40px; /* Más padding interno */
+    border-radius: 16px; /* Bordes más redondeados */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08); /* Sombra más suave y difusa */
     width: 90%;
-    max-width: 600px; /* Un poco más ancho para dos jugadores */
+    max-width: 620px;
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out; /* Para transiciones */
 }
 
 h1 {
-    color: #2c3e50;
-    margin-bottom: 10px;
-    font-size: 2.2em;
+    color: #2c3e50; /* Azul oscuro grisáceo */
+    margin-bottom: 8px;
+    font-size: 2.4em; /* Ligeramente más grande */
+    font-weight: 600; /* Un poco más de peso */
 }
 
 .subtitle {
-    font-size: 0.95em;
-    color: #555;
-    margin-bottom: 20px;
+    font-size: 1em;
+    color: #6c757d; /* Gris medio */
+    margin-bottom: 25px;
+    font-weight: 300; /* Más ligero */
 }
 
 /* Selección de Modo */
 #gameModeSelection {
     margin-bottom: 30px;
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.5s ease, transform 0.5s ease;
 }
+#gameModeSelection.fade-out { /* Clase para animar salida */
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
 #gameModeSelection h2 {
-    margin-bottom: 20px;
-    color: #34495e;
+    margin-bottom: 25px;
+    color: #343a40;
+    font-weight: 500;
 }
 .mode-button {
-    background-color: #2ecc71;
+    background-color: #50C878; /* Verde menta */
     color: white;
     border: none;
-    padding: 15px 30px;
+    padding: 16px 32px;
     font-size: 1.1em;
-    font-weight: bold;
-    border-radius: 8px;
+    font-weight: 500;
+    border-radius: 10px;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.1s ease;
+    transition: background-color 0.25s ease, transform 0.15s ease, box-shadow 0.25s ease;
     margin: 10px;
-    min-width: 200px;
+    min-width: 210px;
+    box-shadow: 0 4px 12px rgba(80, 200, 120, 0.3); /* Sombra del color del botón */
 }
 .mode-button:hover {
-    background-color: #27ae60;
+    background-color: #45b36a; /* Verde más oscuro */
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 16px rgba(80, 200, 120, 0.4);
 }
 .mode-button:active {
-    transform: translateY(1px);
+    transform: translateY(0px) scale(1);
+    box-shadow: 0 2px 8px rgba(80, 200, 120, 0.25);
 }
+
+/* Área de Juego */
+#gameArea.hidden {
+    display: none;
+}
+#gameArea {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInSlideUp 0.5s forwards ease-out;
+}
+
+@keyframes fadeInSlideUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 
 /* Botones de Juego */
 #startGameButton {
-    background-color: #3498db;
+    background-color: #4A90E2; /* Azul sereno */
     color: white;
     border: none;
-    padding: 14px 28px;
+    padding: 15px 30px;
     font-size: 1.15em;
-    font-weight: bold;
-    border-radius: 8px;
+    font-weight: 500;
+    border-radius: 10px;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.1s ease;
-    margin-bottom: 15px; /* Reducido */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: background-color 0.25s ease, transform 0.15s ease, box-shadow 0.25s ease;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
 }
 #startGameButton:hover {
-    background-color: #2980b9;
+    background-color: #3a7cc0; /* Azul más oscuro */
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 16px rgba(74, 144, 226, 0.4);
 }
 #startGameButton:active {
-    transform: translateY(1px);
+    transform: translateY(0px) scale(1);
+    box-shadow: 0 2px 8px rgba(74, 144, 226, 0.25);
 }
 #startGameButton:disabled {
-    background-color: #bdc3c7;
+    background-color: #ced4da; /* Gris claro para deshabilitado */
     cursor: not-allowed;
     box-shadow: none;
+    transform: none;
 }
 
-.small-button { /* Para "Cambiar Modo" */
-    background-color: #95a5a6;
+.small-button {
+    background-color: #adb5bd; /* Gris medio */
     color: white;
     border: none;
-    padding: 8px 15px;
+    padding: 9px 18px;
     font-size: 0.9em;
-    border-radius: 5px;
+    font-weight: 500;
+    border-radius: 8px;
     cursor: pointer;
-    margin-bottom: 20px;
-    transition: background-color 0.2s ease;
+    margin-bottom: 25px;
+    transition: background-color 0.2s ease, transform 0.1s ease;
 }
 .small-button:hover {
-    background-color: #7f8c8d;
+    background-color: #868e96;
+    transform: translateY(-1px);
 }
-
 
 /* Elementos del Juego */
 #turnInfoDisplay {
-    font-size: 1.3em;
-    font-weight: bold;
-    color: #e67e22; /* Naranja para el turno */
-    margin-bottom: 15px;
+    font-size: 1.35em;
+    font-weight: 600; /* Más peso */
+    color: #fd7e14; /* Naranja vibrante */
+    margin-bottom: 18px;
 }
 
 #challengeWordContainer p {
-    font-size: 1.05em;
-    margin-bottom: 5px;
-    color: #4a4a4a;
+    font-size: 1em; /* Un poco más pequeño */
+    margin-bottom: 8px;
+    color: #495057;
+    font-weight: 300;
 }
 #challengeWordDisplay {
-    font-size: 2.8em;
-    font-weight: bold;
-    color: #34495e;
-    min-height: 55px;
-    margin-bottom: 25px;
-    letter-spacing: 1px;
+    font-size: 3em; /* Más grande */
+    font-weight: 700; /* Bold */
+    color: #2c3e50;
+    min-height: 60px;
+    margin-bottom: 30px;
+    letter-spacing: 1.5px; /* Un poco más de espaciado */
     word-wrap: break-word;
+    line-height: 1.2; /* Para palabras largas */
 }
 #challengeWordDisplay .highlight {
-    color: #e74c3c;
-    text-decoration: underline;
-    text-decoration-color: #e74c3c;
-    text-decoration-thickness: 3px;
-    text-underline-offset: 3px;
+    color: #e74c3c; /* Rojo coral */
+    /* text-decoration: none; */ /* Quitar subrayado por defecto */
+    /* border-bottom: 3px solid #e74c3c; */ /* Usar borde inferior */
+    /* padding-bottom: 2px; */
+    background: linear-gradient(to top, rgba(231, 76, 60, 0.2) 40%, transparent 40%); /* Resaltado tipo marcador */
+    padding: 0 2px; /* Pequeño padding horizontal */
+    border-radius: 3px;
 }
 
 .scores-container {
     display: flex;
     justify-content: space-around;
-    margin: 15px 0;
-    padding: 10px;
-    background-color: #ecf0f1;
-    border-radius: 6px;
+    margin: 20px 0;
+    padding: 12px;
+    background-color: #e9ecef; /* Gris más claro para contraste */
+    border-radius: 10px;
 }
 #scorePlayer1Display, #scorePlayer2Display {
     font-size: 1.25em;
-    color: #2c3e50;
+    color: #343a40;
     font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 6px;
+    transition: color 0.3s ease, background-color 0.3s ease;
 }
-#scorePlayer1Display.active-turn, #scorePlayer2Display.active-turn { /* Resaltar jugador activo */
-    color: #3498db;
-    font-weight: bold;
+#scorePlayer1Display.active-turn, #scorePlayer2Display.active-turn {
+    color: #ffffff;
+    background-color: #4A90E2; /* Azul del botón principal */
+    font-weight: 600;
 }
 
 
 #timerDisplay {
     font-size: 1.3em;
-    margin: 12px 0;
-    color: #7f8c8d;
+    margin: 15px 0;
+    color: #6c757d;
+    font-weight: 500;
+}
+#timerDisplay.low-time { /* Cuando quede poco tiempo */
+    color: #dc3545; /* Rojo de alerta */
+    font-weight: 600;
+}
+
+
+#messageDisplay {
+    margin-top: 25px;
+    font-size: 1.1em;
+    color: #343a40; /* Mensajes de éxito en gris oscuro */
+    font-weight: 500; /* Menos agresivo que bold */
+    min-height: 22px;
+}
+#messageDisplay.error { /* Clase para mensajes de error */
+    color: #dc3545; /* Rojo de alerta */
     font-weight: 500;
 }
 
-#messageDisplay {
-    margin-top: 20px;
-    font-size: 1.1em;
-    color: #c0392b;
-    font-weight: bold;
-    min-height: 22px;
-}
+
 #statusDisplay {
-    margin-top: 10px;
-    font-size: 0.95em;
-    color: #95a5a6;
+    margin-top: 12px;
+    font-size: 0.9em;
+    color: #6c757d;
     min-height: 20px;
+    font-style: italic;
 }
 
 #usedWordsPlayerContainer {
     margin-top: 30px;
     text-align: left;
-    max-height: 120px;
+    max-height: 130px;
     overflow-y: auto;
-    border: 1px solid #e0e0e0;
-    padding: 12px 15px;
-    border-radius: 8px;
-    background-color: #f9f9f9;
+    border: 1px solid #dee2e6; /* Borde más suave */
+    padding: 15px;
+    border-radius: 10px;
+    background-color: #f8f9fa;
 }
 #usedWordsPlayerContainer h3 {
     margin-top: 0;
     margin-bottom: 10px;
-    font-size: 1.05em;
-    color: #333;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 5px;
+    font-size: 1em;
+    color: #495057;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 6px;
+    font-weight: 500;
 }
 #usedWordsList {
     list-style-type: none;
@@ -197,10 +258,11 @@ h1 {
     margin: 0;
 }
 #usedWordsList li {
-    padding: 4px 0;
-    font-size: 0.95em;
-    color: #555;
-    border-bottom: 1px dotted #eee;
+    padding: 5px 2px;
+    font-size: 0.9em;
+    color: #495057;
+    border-bottom: 1px dashed #e9ecef; /* Punteado más sutil */
+    font-weight: 300;
 }
 #usedWordsList li:last-child {
     border-bottom: none;
@@ -209,3 +271,19 @@ h1 {
 .hidden {
     display: none !important;
 }
+
+/* Sutil efecto de ondas sonoras de fondo (opcional, puede ser pesado) */
+/*
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: radial-gradient(circle, rgba(74, 144, 226, 0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+    opacity: 0.5;
+    z-index: -1;
+}
+*/

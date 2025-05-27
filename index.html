@@ -4,25 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadena Silábica Sonora - Elige Modo</title>
+    <!-- Google Font: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <h1>Cadena Silábica Sonora</h1>
 
-        <!-- Selección de Modo de Juego -->
         <div id="gameModeSelection">
             <h2>Elige un Modo de Juego:</h2>
             <button id="onePlayerButton" class="mode-button">Un Jugador (vs IA)</button>
             <button id="twoPlayerButton" class="mode-button">Dos Jugadores</button>
         </div>
 
-        <!-- Área Principal del Juego (inicialmente oculta) -->
         <div id="gameArea" class="hidden">
             <p id="gameModeInfo" class="subtitle"></p>
             <button id="startGameButton">Comenzar Juego</button>
-             <button id="backToModeSelectionButton" class="small-button">Cambiar Modo</button>
-
+            <button id="backToModeSelectionButton" class="small-button">Cambiar Modo</button>
 
             <div id="turnInfoDisplay" class="hidden">Turno: ---</div>
 
@@ -33,7 +34,7 @@
 
             <div class="scores-container">
                 <div id="scorePlayer1Display">Jugador 1: 0</div>
-                <div id="scorePlayer2Display" class="hidden">Jugador 2: 0</div> <!-- Oculto para 1P -->
+                <div id="scorePlayer2Display" class="hidden">Jugador 2: 0</div>
             </div>
 
             <div id="timerDisplay">Tiempo: 10s</div>
@@ -42,7 +43,7 @@
 
             <div id="usedWordsPlayerContainer">
                 <h3>Palabras dichas en esta partida:</h3>
-                <ul id="usedWordsList"></ul> <!-- Unificada para ambos modos -->
+                <ul id="usedWordsList"></ul>
             </div>
         </div>
     </div>
