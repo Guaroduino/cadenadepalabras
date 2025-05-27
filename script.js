@@ -15,7 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let recognition;
     let estaJugando = false;
     let palabrasCargadas = false;
-    let speechRecognitionActivo = false; // Nuevo flag para controlar el estado del reconocimiento
+    let speechRecognitionActivo = false;
+    let palabraProcesadaEnTurnoActual = false; // Nuevo flag
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -24,38 +25,31 @@ document.addEventListener('DOMContentLoaded', () => {
         startButton.disabled = true;
         try {
             const response = await fetch('palabras.txt');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const text = await response.text();
             listaPalabras = text.split('\n')
                                 .map(palabra => normalizarTexto(palabra.trim()))
                                 .filter(palabra => palabra.length > 1);
-            
-            if (listaPalabras.length === 0) {
-                throw new Error("La lista de palabras está vacía o no se pudo cargar correctamente.");
-            }
+            if (listaPalabras.length === 0) throw new Error("Lista de palabras vacía.");
             palabrasCargadas = true;
             statusDisplay.textContent = '¡Palabras cargadas! Listo para jugar.';
             startButton.disabled = false;
-            // console.log(`Cargadas ${listaPalabras.length} palabras.`);
         } catch (error) {
             console.error("Error al cargar la lista de palabras:", error);
-            statusDisplay.textContent = 'Error al cargar palabras. Intenta recargar.';
-            messageDisplay.textContent = 'No se pudo cargar la lista de palabras necesaria para jugar.';
+            statusDisplay.textContent = 'Error al cargar palabras. Recarga.';
+            messageDisplay.textContent = 'No se pudo cargar la lista de palabras.';
             startButton.disabled = true;
         }
     }
 
     if (!SpeechRecognition) {
-        statusDisplay.textContent = "Tu navegador no soporta reconocimiento de voz. Prueba con Chrome o Edge.";
+        statusDisplay.textContent = "Navegador no soporta reconocimiento de voz.";
         startButton.disabled = true;
         return;
     } else {
-        // Crear instancia de recognition aquí para que esté disponible globalmente
         recognition = new SpeechRecognition();
         recognition.lang = 'es-ES';
-        recognition.continuous = false;
+        recognition.continuous = false; // Crucial: se detiene tras la primera detección o silencio.
         recognition.interimResults = false;
 
         recognition.onresult = procesarEntradaVoz;
@@ -68,84 +62,61 @@ document.addEventListener('DOMContentLoaded', () => {
         recognition.onend = () => {
             speechRecognitionActivo = false;
             // console.log("Speech recognition ended.");
-            // No reiniciar automáticamente aquí. El flujo del juego decidirá cuándo iniciar de nuevo.
-            // Si el juego sigue y el timer no ha acabado, y no fue por un resultado, podría ser un error.
-            // Pero en este flujo, procesarEntradaVoz o el timer se encargan.
-            if (estaJugando && tiempoRestante > 0 && !messageDisplay.textContent.includes("Dijiste:")) {
-                 // Esto podría ser un 'no-speech' que no disparó onerror o un final inesperado.
-                 // Reintentar si no estamos ya en proceso de terminar el juego.
-                 // console.log("Recognition ended unexpectedly, attempting to restart if game is active.");
-                 // iniciarEscuchaConRetraso(); // Opcional: reintentar si finaliza sin resultado y el juego sigue.
+            // Si el reconocimiento termina SIN que se haya procesado una palabra Y el juego sigue Y hay tiempo,
+            // reiniciarlo para que el usuario tenga toda la ventana de tiempo.
+            if (estaJugando && !palabraProcesadaEnTurnoActual && tiempoRestante > 0) {
+                // console.log("Recognition ended without processing word, restarting listen.");
+                iniciarEscucha();
             }
         };
         cargarListaPalabras();
     }
 
     function iniciarEscucha() {
-        if (!estaJugando || speechRecognitionActivo) {
-            // console.log("No se inicia escucha: juego no activo o ya escuchando.");
-            return;
-        }
+        if (!estaJugando || speechRecognitionActivo) return;
         if (recognition) {
             try {
                 // console.log("Attempting to start speech recognition...");
                 recognition.start();
             } catch (e) {
-                // Esto puede pasar si se llama .start() demasiado rápido después de un .stop() o .abort()
-                // o si ya está corriendo (aunque speechRecognitionActivo debería prevenirlo)
                 console.error("Error al intentar iniciar recognition:", e);
                 statusDisplay.textContent = 'Error al activar micrófono. Reintentando...';
-                // Reintentar con un pequeño delay
                 setTimeout(() => {
                     if (estaJugando && !speechRecognitionActivo) {
-                        try {
-                            recognition.start();
-                        } catch (e2) {
-                            console.error("Error en el reintento de iniciar recognition:", e2);
-                            terminarJuego("No se pudo activar el micrófono después de un error.");
-                        }
+                        try { recognition.start(); }
+                        catch (e2) { terminarJuego("No se pudo activar el micrófono."); }
                     }
                 }, 250);
             }
-        } else {
-            console.error("Recognition object no está inicializado al intentar iniciarEscucha");
-            terminarJuego("Error crítico: Reconocimiento de voz no disponible.");
         }
     }
 
-
     function iniciarJuego() {
-        if (!palabrasCargadas) {
-            messageDisplay.textContent = "Las palabras aún se están cargando, por favor espera.";
+        if (!palabrasCargadas || listaPalabras.length === 0) {
+            messageDisplay.textContent = !palabrasCargadas ? "Palabras cargando..." : "No hay palabras.";
             return;
         }
-        if (listaPalabras.length === 0) {
-            messageDisplay.textContent = "No hay palabras cargadas para iniciar el juego.";
-            return;
-        }
-
         puntuacion = 0;
         actualizarPuntuacion(0);
         messageDisplay.textContent = '';
         startButton.disabled = true;
         estaJugando = true;
+        palabraProcesadaEnTurnoActual = false; // Resetear para el nuevo juego/turno
 
         palabraDesafioActual = seleccionarPalabraAleatoria();
         if (!palabraDesafioActual) {
-            terminarJuego("Error: No se pudo seleccionar una palabra inicial.");
+            terminarJuego("Error: No se pudo seleccionar palabra inicial.");
             return;
         }
-
         const ultimaSilaba = obtenerUltimaSilaba(palabraDesafioActual);
         if (!ultimaSilaba) {
             terminarJuego(`Error al obtener sílaba de: "${palabraDesafioActual}".`);
             return;
         }
         silabaObjetivo = ultimaSilaba;
-
         resaltarSilabaEnPantalla(palabraDesafioActual, silabaObjetivo);
         iniciarTemporizador();
-        iniciarEscucha(); // Usar la nueva función wrapper
+        iniciarEscucha();
     }
 
     function seleccionarPalabraAleatoria(silabaInicialRequerida = null) {
@@ -154,11 +125,10 @@ document.addEventListener('DOMContentLoaded', () => {
             palabrasFiltradas = listaPalabras.filter(p => p.startsWith(silabaInicialRequerida));
         }
         if (palabrasFiltradas.length === 0) return null;
-        const indiceAleatorio = Math.floor(Math.random() * palabrasFiltradas.length);
-        return palabrasFiltradas[indiceAleatorio];
+        return palabrasFiltradas[Math.floor(Math.random() * palabrasFiltradas.length)];
     }
 
-    function obtenerSilabas(palabraNORMALIZADA) {
+    function obtenerSilabas(palabraNORMALIZADA) { /* ... (sin cambios) ... */
         if (!palabraNORMALIZADA) return [];
         const VOCALES_MAYUS = "AEIOUÁÉÍÓÚÜ";
         const silabasRegex = new RegExp( `[^${VOCALES_MAYUS}]*[${VOCALES_MAYUS}]+(?:[^${VOCALES_MAYUS}]+(?![${VOCALES_MAYUS}])|[^${VOCALES_MAYUS}]*(?=$))`, 'gi');
@@ -167,14 +137,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return [palabraNORMALIZADA];
     }
 
-    function obtenerUltimaSilaba(palabraNORMALIZADA) {
+    function obtenerUltimaSilaba(palabraNORMALIZADA) { /* ... (sin cambios) ... */
         const silabas = obtenerSilabas(palabraNORMALIZADA);
         if (silabas && silabas.length > 0) return silabas[silabas.length - 1];
         return null;
     }
 
-    function resaltarSilabaEnPantalla(palabra, silaba) {
-        palabra = palabra.toUpperCase(); 
+    function resaltarSilabaEnPantalla(palabra, silaba) { /* ... (sin cambios) ... */
+        palabra = palabra.toUpperCase();
         silaba = silaba.toUpperCase();
         const indiceUltimaSilaba = palabra.lastIndexOf(silaba);
         if (indiceUltimaSilaba !== -1 && (indiceUltimaSilaba + silaba.length === palabra.length)) {
@@ -188,22 +158,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // configurarReconocimientoVoz ya no es necesaria, se hace al inicio.
-
     function procesarEntradaVoz(evento) {
         if (!estaJugando) return;
         
-        speechRecognitionActivo = false; // Se detiene al obtener resultado
-        clearTimeout(temporizadorId); 
-        // statusDisplay.textContent = 'Procesando...'; // Se establece en onstart
+        palabraProcesadaEnTurnoActual = true; // Marcar que una palabra fue procesada
+        // speechRecognitionActivo se volverá false en el onend que sigue a este onresult.
+        // clearTimeout(temporizadorId); // NO detener el timer aquí, queremos que siga hasta 0 o hasta el próximo turno.
+                                       // SÍ lo detenemos porque una palabra fue dicha y será validada. Si es correcta,
+                                       // el timer se reinicia para el siguiente turno. Si es incorrecta, el juego termina.
+        clearTimeout(temporizadorId);
 
         let palabraUsuario = evento.results[0][0].transcript;
         palabraUsuario = normalizarTexto(palabraUsuario); 
         
-        if (!palabraUsuario) {
-            statusDisplay.textContent = 'No entendí. Intenta de nuevo.';
-            iniciarTemporizador(); 
-            iniciarEscucha(); // Reintentar escuchar para el mismo desafío
+        if (!palabraUsuario) { // Esto es raro si onresult se dispara, pero por si acaso.
+            // statusDisplay.textContent = 'No entendí. Intenta de nuevo.'; // El onend se encargará de reiniciar si es necesario.
+            palabraProcesadaEnTurnoActual = false; // No se procesó realmente, permitir que onend reinicie
+            iniciarTemporizador(); // Reiniciar timer para este intento
+            // iniciarEscucha(); // onend lo hará si es necesario
             return;
         }
         
@@ -235,9 +207,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 silabaObjetivo = nuevaUltimaSilaba;
                 resaltarSilabaEnPantalla(palabraDesafioActual, silabaObjetivo);
-                iniciarTemporizador();
-                // statusDisplay.textContent = '¡Correcto! Escuchando siguiente...'; // Se actualiza en onstart
-                iniciarEscucha(); // Iniciar escucha para el nuevo desafío
+                
+                palabraProcesadaEnTurnoActual = false; // Resetear para el nuevo turno
+                iniciarTemporizador(); // Reinicia timer Y escucha para el nuevo turno
+                iniciarEscucha(); 
             } else {
                 terminarJuego(`¡Increíble! No encontré palabra que empiece con "${proximaSilabaInicial.toUpperCase()}". ¡Ganaste!`);
             }
@@ -248,46 +221,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function manejarErrorVoz(evento) {
         if (!estaJugando) return;
-        speechRecognitionActivo = false; // Se detiene si hay error
-
-        let errorMsg = `Error de reconocimiento: ${evento.error}`;
+        // speechRecognitionActivo se volverá false en el onend que sigue a este onerror.
+        
         // console.error("Error de voz:", evento.error, evento.message);
 
         if (evento.error === 'no-speech') {
-            statusDisplay.textContent = "No se detectó voz. El temporizador sigue...";
-            // No terminar el juego aquí, el temporizador lo hará.
-            // Reintentar la escucha si el tiempo no ha acabado.
-            if (tiempoRestante > 0 && estaJugando) {
-                 // console.log("'no-speech' error, re-initiating listen.");
-                 iniciarEscucha();
-            }
-        } else if (evento.error === 'audio-capture') {
-            errorMsg = "Problema con el micrófono. Asegúrate que está conectado y permitido.";
-            terminarJuego(errorMsg);
-        } else if (evento.error === 'not-allowed') {
-            errorMsg = "Permiso para micrófono denegado. Habilítalo en tu navegador y recarga.";
-            terminarJuego(errorMsg);
-        } else if (evento.error === 'network') {
-            errorMsg = "Error de red con el servicio de reconocimiento.";
-            statusDisplay.textContent = errorMsg;
-            // Podríamos intentar reiniciar la escucha si el timer no ha acabado.
-            if (tiempoRestante > 0 && estaJugando) iniciarEscucha();
+            statusDisplay.textContent = "No se detectó voz. Sigo escuchando...";
+            // No hacemos nada aquí directamente. El `onend` que sigue a 'no-speech'
+            // se encargará de reiniciar `iniciarEscucha()` si `palabraProcesadaEnTurnoActual` es false
+            // y `tiempoRestante > 0`.
+        } else if (evento.error === 'audio-capture' || evento.error === 'not-allowed') {
+            const msg = evento.error === 'audio-capture' ? "Problema con el micrófono." : "Permiso de micrófono denegado.";
+            terminarJuego(msg);
         } else if (evento.error === 'aborted') {
-            // console.log("Recognition aborted. Usually intentional via .abort() or game ending.");
-            if (estaJugando) { // Si el juego debería seguir y se abortó, puede ser un problema
-                statusDisplay.textContent = "La escucha fue interrumpida.";
-                if (tiempoRestante > 0) iniciarEscucha();
+            // Esto puede ocurrir si el temporizador llama a abort() o si el juego termina.
+            // Si el juego sigue activo y fue abortado inesperadamente, onend podría intentar reiniciar.
+            // console.log("Recognition aborted.");
+            if (estaJugando && !palabraProcesadaEnTurnoActual && tiempoRestante > 0) {
+                 statusDisplay.textContent = "Escucha interrumpida, reintentando...";
+                 // El onend que sigue se encargará de reiniciar.
             }
-        }
-        else {
-            statusDisplay.textContent = errorMsg;
-            if (tiempoRestante > 0 && estaJugando) {
-                iniciarEscucha(); // Reintentar para otros errores si el juego sigue
-            }
+        } else { // Otros errores como 'network', 'service-not-allowed', etc.
+            statusDisplay.textContent = `Error de reconocimiento: ${evento.error}. Sigo intentando...`;
+            // Similar a 'no-speech', dejamos que onend intente reiniciar si es apropiado.
         }
     }
 
-    function actualizarPuntuacion(nuevaPuntuacion) {
+    function actualizarPuntuacion(nuevaPuntuacion) { /* ... (sin cambios) ... */
         puntuacion = nuevaPuntuacion;
         scoreDisplay.textContent = `Puntuación: ${puntuacion}`;
     }
@@ -296,6 +256,8 @@ document.addEventListener('DOMContentLoaded', () => {
         clearTimeout(temporizadorId);
         tiempoRestante = 10;
         timerDisplay.textContent = `Tiempo: ${tiempoRestante}s`;
+        // palabraProcesadaEnTurnoActual se resetea al inicio del turno (iniciarJuego o después de un acierto)
+        
         temporizadorId = setInterval(() => {
             tiempoRestante--;
             timerDisplay.textContent = `Tiempo: ${tiempoRestante}s`;
@@ -303,23 +265,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (tiempoRestante === 0) {
                 clearTimeout(temporizadorId);
-                if (estaJugando) { 
+                if (estaJugando && !palabraProcesadaEnTurnoActual) { // Si no se procesó palabra, termina el juego
                     if (speechRecognitionActivo && recognition) {
-                        recognition.abort(); // Abortar escucha activa si el tiempo se acaba
+                        recognition.abort(); 
                     }
                     terminarJuego("¡Tiempo agotado!");
                 }
+                // Si una palabra fue procesada, el juego ya habría terminado o pasado al siguiente turno.
             }
         }, 1000);
     }
 
     function terminarJuego(mensajeFinal = "Juego Terminado") {
         if (!estaJugando) return; 
-        
         estaJugando = false;
         clearTimeout(temporizadorId);
-        if (recognition && speechRecognitionActivo) { // Solo abortar si está activo
-            // console.log("Terminando juego, abortando recognition si está activo.");
+        if (recognition && speechRecognitionActivo) {
             recognition.abort(); 
         }
         speechRecognitionActivo = false;
@@ -328,20 +289,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (palabrasCargadas && listaPalabras.length > 0) {
             statusDisplay.textContent = 'Presiona "Comenzar Juego" para jugar de nuevo.';
             startButton.disabled = false;
-        } else if (!palabrasCargadas) {
-            statusDisplay.textContent = 'Error al cargar palabras. Recarga la página.';
+        } else {
+            statusDisplay.textContent = !palabrasCargadas ? 'Error al cargar palabras.' : 'Lista de palabras vacía.';
             startButton.disabled = true;
         }
         challengeWordDisplay.innerHTML = "---"; 
         timerDisplay.textContent = `Tiempo: -`;
     }
 
-    function normalizarTexto(texto) {
+    function normalizarTexto(texto) { /* ... (sin cambios) ... */
         if (!texto) return '';
         return texto.trim().toUpperCase()
-            .normalize("NFD").replace(/[\u0300-\u036f]/g, "") 
-            .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()¿?¡"]/g,"") 
-            .replace(/\s+/g, ' '); 
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()¿?¡"]/g,"")
+            .replace(/\s+/g, ' ');
     }
 
     startButton.addEventListener('click', iniciarJuego);
