@@ -2,11 +2,11 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* Alinea al inicio para ver todo si hay scroll */
+    align-items: flex-start;
     min-height: 100vh;
     background-color: #f4f7f6;
     margin: 0;
-    padding-top: 20px; /* Espacio arriba */
+    padding: 20px; /* Espacio general */
     color: #333;
     line-height: 1.6;
 }
@@ -18,22 +18,51 @@ body {
     border-radius: 12px;
     box-shadow: 0 6px 18px rgba(0,0,0,0.1);
     width: 90%;
-    max-width: 550px;
+    max-width: 600px; /* Un poco más ancho para dos jugadores */
 }
 
 h1 {
     color: #2c3e50;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     font-size: 2.2em;
 }
 
 .subtitle {
     font-size: 0.95em;
     color: #555;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
 }
 
-button#startButton {
+/* Selección de Modo */
+#gameModeSelection {
+    margin-bottom: 30px;
+}
+#gameModeSelection h2 {
+    margin-bottom: 20px;
+    color: #34495e;
+}
+.mode-button {
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.1em;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    margin: 10px;
+    min-width: 200px;
+}
+.mode-button:hover {
+    background-color: #27ae60;
+}
+.mode-button:active {
+    transform: translateY(1px);
+}
+
+/* Botones de Juego */
+#startGameButton {
     background-color: #3498db;
     color: white;
     border: none;
@@ -43,21 +72,43 @@ button#startButton {
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.1s ease;
-    margin-bottom: 25px;
+    margin-bottom: 15px; /* Reducido */
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
-
-button#startButton:hover {
+#startGameButton:hover {
     background-color: #2980b9;
 }
-button#startButton:active {
+#startGameButton:active {
     transform: translateY(1px);
 }
-
-button#startButton:disabled {
+#startGameButton:disabled {
     background-color: #bdc3c7;
     cursor: not-allowed;
     box-shadow: none;
+}
+
+.small-button { /* Para "Cambiar Modo" */
+    background-color: #95a5a6;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    font-size: 0.9em;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: background-color 0.2s ease;
+}
+.small-button:hover {
+    background-color: #7f8c8d;
+}
+
+
+/* Elementos del Juego */
+#turnInfoDisplay {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #e67e22; /* Naranja para el turno */
+    margin-bottom: 15px;
 }
 
 #challengeWordContainer p {
@@ -65,7 +116,6 @@ button#startButton:disabled {
     margin-bottom: 5px;
     color: #4a4a4a;
 }
-
 #challengeWordDisplay {
     font-size: 2.8em;
     font-weight: bold;
@@ -73,34 +123,49 @@ button#startButton:disabled {
     min-height: 55px;
     margin-bottom: 25px;
     letter-spacing: 1px;
+    word-wrap: break-word;
 }
-
 #challengeWordDisplay .highlight {
     color: #e74c3c;
     text-decoration: underline;
     text-decoration-color: #e74c3c;
     text-decoration-thickness: 3px;
-    text-underline-offset: 3px; /* Ajuste para que el subrayado no pegue tanto */
+    text-underline-offset: 3px;
 }
 
-#scoreDisplay, #timerDisplay {
+.scores-container {
+    display: flex;
+    justify-content: space-around;
+    margin: 15px 0;
+    padding: 10px;
+    background-color: #ecf0f1;
+    border-radius: 6px;
+}
+#scorePlayer1Display, #scorePlayer2Display {
+    font-size: 1.25em;
+    color: #2c3e50;
+    font-weight: 500;
+}
+#scorePlayer1Display.active-turn, #scorePlayer2Display.active-turn { /* Resaltar jugador activo */
+    color: #3498db;
+    font-weight: bold;
+}
+
+
+#timerDisplay {
     font-size: 1.3em;
     margin: 12px 0;
     color: #7f8c8d;
     font-weight: 500;
 }
-#scoreDisplay {
-    color: #27ae60; /* Verde para la puntuación */
-}
 
 #messageDisplay {
     margin-top: 20px;
     font-size: 1.1em;
-    color: #c0392b; /* Rojo más oscuro para mensajes de error/fin */
+    color: #c0392b;
     font-weight: bold;
     min-height: 22px;
 }
-
 #statusDisplay {
     margin-top: 10px;
     font-size: 0.95em;
@@ -118,7 +183,6 @@ button#startButton:disabled {
     border-radius: 8px;
     background-color: #f9f9f9;
 }
-
 #usedWordsPlayerContainer h3 {
     margin-top: 0;
     margin-bottom: 10px;
@@ -127,19 +191,21 @@ button#startButton:disabled {
     border-bottom: 1px solid #ddd;
     padding-bottom: 5px;
 }
-
-#usedWordsPlayerList {
+#usedWordsList {
     list-style-type: none;
     padding-left: 0;
     margin: 0;
 }
-
-#usedWordsPlayerList li {
+#usedWordsList li {
     padding: 4px 0;
     font-size: 0.95em;
     color: #555;
     border-bottom: 1px dotted #eee;
 }
-#usedWordsPlayerList li:last-child {
+#usedWordsList li:last-child {
     border-bottom: none;
+}
+
+.hidden {
+    display: none !important;
 }
