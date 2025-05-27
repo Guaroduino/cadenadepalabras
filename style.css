@@ -1,0 +1,85 @@
+body {
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f0f0;
+    margin: 0;
+    color: #333;
+}
+
+.container {
+    text-align: center;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+h1 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+button#startButton {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    font-size: 1.1em;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-bottom: 20px;
+}
+
+button#startButton:hover {
+    background-color: #2980b9;
+}
+
+button#startButton:disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed;
+}
+
+#challengeWordContainer p {
+    font-size: 1.1em;
+    margin-bottom: 5px;
+}
+
+#challengeWordDisplay {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #34495e;
+    min-height: 50px; /* Para evitar saltos de layout */
+    margin-bottom: 20px;
+}
+
+#challengeWordDisplay .highlight {
+    color: #e74c3c; /* Color para la sílaba resaltada */
+    text-decoration: underline;
+    text-decoration-color: #e74c3c;
+    text-decoration-thickness: 2px;
+}
+
+#scoreDisplay, #timerDisplay {
+    font-size: 1.2em;
+    margin: 10px 0;
+    color: #7f8c8d;
+}
+
+#messageDisplay {
+    margin-top: 20px;
+    font-size: 1.1em;
+    color: #e74c3c;
+    font-weight: bold;
+    min-height: 20px; /* Para evitar saltos de layout */
+}
+
+#statusDisplay {
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #95a5a6;
+    min-height: 18px;
+}
