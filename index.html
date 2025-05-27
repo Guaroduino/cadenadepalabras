@@ -3,21 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadena Silábica Sonora</title>
+    <title>Cadena Silábica Sonora - Amplía Vocabulario</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <h1>Cadena Silábica Sonora</h1>
+        <p class="subtitle">¡Usa palabras largas y no repetidas para ganar más puntos!</p>
         <button id="startButton">Comenzar Juego</button>
+
         <div id="challengeWordContainer">
-            <p>Palabra de desafío:</p>
+            <p>Palabra de desafío (empieza con su última sílaba):</p>
             <div id="challengeWordDisplay">---</div>
         </div>
+
         <div id="scoreDisplay">Puntuación: 0</div>
         <div id="timerDisplay">Tiempo: 10s</div>
         <div id="messageDisplay"></div>
         <div id="statusDisplay"></div>
+
+        <div id="usedWordsPlayerContainer">
+            <h3>Palabras que has dicho:</h3>
+            <ul id="usedWordsPlayerList"></ul>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>

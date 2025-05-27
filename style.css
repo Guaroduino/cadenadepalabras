@@ -1,85 +1,145 @@
 body {
-    font-family: sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start; /* Alinea al inicio para ver todo si hay scroll */
     min-height: 100vh;
-    background-color: #f0f0f0;
+    background-color: #f4f7f6;
     margin: 0;
+    padding-top: 20px; /* Espacio arriba */
     color: #333;
+    line-height: 1.6;
 }
 
 .container {
     text-align: center;
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    background-color: #ffffff;
+    padding: 25px 35px;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    width: 90%;
+    max-width: 550px;
 }
 
 h1 {
     color: #2c3e50;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
+    font-size: 2.2em;
+}
+
+.subtitle {
+    font-size: 0.95em;
+    color: #555;
+    margin-bottom: 25px;
 }
 
 button#startButton {
     background-color: #3498db;
     color: white;
     border: none;
-    padding: 12px 25px;
-    font-size: 1.1em;
-    border-radius: 5px;
+    padding: 14px 28px;
+    font-size: 1.15em;
+    font-weight: bold;
+    border-radius: 8px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-bottom: 20px;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 button#startButton:hover {
     background-color: #2980b9;
 }
+button#startButton:active {
+    transform: translateY(1px);
+}
 
 button#startButton:disabled {
     background-color: #bdc3c7;
     cursor: not-allowed;
+    box-shadow: none;
 }
 
 #challengeWordContainer p {
-    font-size: 1.1em;
+    font-size: 1.05em;
     margin-bottom: 5px;
+    color: #4a4a4a;
 }
 
 #challengeWordDisplay {
-    font-size: 2.5em;
+    font-size: 2.8em;
     font-weight: bold;
     color: #34495e;
-    min-height: 50px; /* Para evitar saltos de layout */
-    margin-bottom: 20px;
+    min-height: 55px;
+    margin-bottom: 25px;
+    letter-spacing: 1px;
 }
 
 #challengeWordDisplay .highlight {
-    color: #e74c3c; /* Color para la sílaba resaltada */
+    color: #e74c3c;
     text-decoration: underline;
     text-decoration-color: #e74c3c;
-    text-decoration-thickness: 2px;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 3px; /* Ajuste para que el subrayado no pegue tanto */
 }
 
 #scoreDisplay, #timerDisplay {
-    font-size: 1.2em;
-    margin: 10px 0;
+    font-size: 1.3em;
+    margin: 12px 0;
     color: #7f8c8d;
+    font-weight: 500;
+}
+#scoreDisplay {
+    color: #27ae60; /* Verde para la puntuación */
 }
 
 #messageDisplay {
     margin-top: 20px;
     font-size: 1.1em;
-    color: #e74c3c;
+    color: #c0392b; /* Rojo más oscuro para mensajes de error/fin */
     font-weight: bold;
-    min-height: 20px; /* Para evitar saltos de layout */
+    min-height: 22px;
 }
 
 #statusDisplay {
     margin-top: 10px;
-    font-size: 0.9em;
+    font-size: 0.95em;
     color: #95a5a6;
-    min-height: 18px;
+    min-height: 20px;
+}
+
+#usedWordsPlayerContainer {
+    margin-top: 30px;
+    text-align: left;
+    max-height: 120px;
+    overflow-y: auto;
+    border: 1px solid #e0e0e0;
+    padding: 12px 15px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+#usedWordsPlayerContainer h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.05em;
+    color: #333;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+
+#usedWordsPlayerList {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+#usedWordsPlayerList li {
+    padding: 4px 0;
+    font-size: 0.95em;
+    color: #555;
+    border-bottom: 1px dotted #eee;
+}
+#usedWordsPlayerList li:last-child {
+    border-bottom: none;
 }

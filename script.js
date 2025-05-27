@@ -5,8 +5,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const timerDisplay = document.getElementById('timerDisplay');
     const messageDisplay = document.getElementById('messageDisplay');
     const statusDisplay = document.getElementById('statusDisplay');
+    const usedWordsPlayerList = document.getElementById('usedWordsPlayerList');
 
-    let listaPalabras = [];
+    let listaPalabrasIA = [];
+    let palabrasDichasPorJugador = new Set();
+
     let puntuacion = 0;
     let palabraDesafioActual = '';
     let silabaObjetivo = '';
@@ -16,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let estaJugando = false;
     let palabrasCargadas = false;
     let speechRecognitionActivo = false;
-    let palabraProcesadaEnTurnoActual = false; // Nuevo flag
+    let palabraProcesadaEnTurnoActual = false;
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -24,48 +27,42 @@ document.addEventListener('DOMContentLoaded', () => {
         statusDisplay.textContent = 'Cargando palabras...';
         startButton.disabled = true;
         try {
-            const response = await fetch('palabras.txt');
+            const response = await fetch('palabras.txt'); // Asegúrate que palabras.txt está en la misma carpeta
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const text = await response.text();
-            listaPalabras = text.split('\n')
+            listaPalabrasIA = text.split('\n')
                                 .map(palabra => normalizarTexto(palabra.trim()))
                                 .filter(palabra => palabra.length > 1);
-            if (listaPalabras.length === 0) throw new Error("Lista de palabras vacía.");
+            if (listaPalabrasIA.length === 0) throw new Error("La lista de palabras está vacía.");
             palabrasCargadas = true;
             statusDisplay.textContent = '¡Palabras cargadas! Listo para jugar.';
             startButton.disabled = false;
         } catch (error) {
             console.error("Error al cargar la lista de palabras:", error);
-            statusDisplay.textContent = 'Error al cargar palabras. Recarga.';
-            messageDisplay.textContent = 'No se pudo cargar la lista de palabras.';
+            statusDisplay.textContent = 'Error al cargar palabras. Intenta recargar.';
+            messageDisplay.textContent = 'No se pudo cargar la lista de palabras necesaria para jugar.';
             startButton.disabled = true;
         }
     }
 
     if (!SpeechRecognition) {
-        statusDisplay.textContent = "Navegador no soporta reconocimiento de voz.";
+        statusDisplay.textContent = "Tu navegador no soporta reconocimiento de voz. Prueba con Chrome o Edge.";
         startButton.disabled = true;
         return;
     } else {
         recognition = new SpeechRecognition();
         recognition.lang = 'es-ES';
-        recognition.continuous = false; // Crucial: se detiene tras la primera detección o silencio.
+        recognition.continuous = false;
         recognition.interimResults = false;
-
         recognition.onresult = procesarEntradaVoz;
         recognition.onerror = manejarErrorVoz;
         recognition.onstart = () => {
             speechRecognitionActivo = true;
             statusDisplay.textContent = 'Escuchando... ¡Habla!';
-            // console.log("Speech recognition started.");
         };
         recognition.onend = () => {
             speechRecognitionActivo = false;
-            // console.log("Speech recognition ended.");
-            // Si el reconocimiento termina SIN que se haya procesado una palabra Y el juego sigue Y hay tiempo,
-            // reiniciarlo para que el usuario tenga toda la ventana de tiempo.
             if (estaJugando && !palabraProcesadaEnTurnoActual && tiempoRestante > 0) {
-                // console.log("Recognition ended without processing word, restarting listen.");
                 iniciarEscucha();
             }
         };
@@ -76,15 +73,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!estaJugando || speechRecognitionActivo) return;
         if (recognition) {
             try {
-                // console.log("Attempting to start speech recognition...");
                 recognition.start();
             } catch (e) {
-                console.error("Error al intentar iniciar recognition:", e);
+                console.error("Error al iniciar recognition:", e);
                 statusDisplay.textContent = 'Error al activar micrófono. Reintentando...';
                 setTimeout(() => {
                     if (estaJugando && !speechRecognitionActivo) {
                         try { recognition.start(); }
-                        catch (e2) { terminarJuego("No se pudo activar el micrófono."); }
+                        catch (e2) { terminarJuego("No se pudo activar el micrófono después de un error."); }
                     }
                 }, 250);
             }
@@ -92,25 +88,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function iniciarJuego() {
-        if (!palabrasCargadas || listaPalabras.length === 0) {
-            messageDisplay.textContent = !palabrasCargadas ? "Palabras cargando..." : "No hay palabras.";
+        if (!palabrasCargadas || listaPalabrasIA.length === 0) {
+            messageDisplay.textContent = !palabrasCargadas ? "Las palabras aún se están cargando..." : "No hay palabras cargadas para iniciar.";
             return;
         }
         puntuacion = 0;
         actualizarPuntuacion(0);
+        palabrasDichasPorJugador.clear();
+        actualizarListaPalabrasDichasPorJugador();
+
         messageDisplay.textContent = '';
         startButton.disabled = true;
         estaJugando = true;
-        palabraProcesadaEnTurnoActual = false; // Resetear para el nuevo juego/turno
+        palabraProcesadaEnTurnoActual = false;
 
-        palabraDesafioActual = seleccionarPalabraAleatoria();
+        palabraDesafioActual = seleccionarPalabraAleatoriaIA();
         if (!palabraDesafioActual) {
-            terminarJuego("Error: No se pudo seleccionar palabra inicial.");
+            terminarJuego("Error: No se pudo seleccionar una palabra inicial para la IA.");
             return;
         }
         const ultimaSilaba = obtenerUltimaSilaba(palabraDesafioActual);
         if (!ultimaSilaba) {
-            terminarJuego(`Error al obtener sílaba de: "${palabraDesafioActual}".`);
+            terminarJuego(`Error al obtener sílaba de la palabra inicial: "${palabraDesafioActual}".`);
             return;
         }
         silabaObjetivo = ultimaSilaba;
@@ -119,31 +118,32 @@ document.addEventListener('DOMContentLoaded', () => {
         iniciarEscucha();
     }
 
-    function seleccionarPalabraAleatoria(silabaInicialRequerida = null) {
-        let palabrasFiltradas = listaPalabras;
+    function seleccionarPalabraAleatoriaIA(silabaInicialRequerida = null) {
+        let palabrasFiltradas = listaPalabrasIA;
         if (silabaInicialRequerida) {
-            palabrasFiltradas = listaPalabras.filter(p => p.startsWith(silabaInicialRequerida));
+            const silabaNorm = normalizarTexto(silabaInicialRequerida);
+            palabrasFiltradas = listaPalabrasIA.filter(p => normalizarTexto(p).startsWith(silabaNorm));
         }
         if (palabrasFiltradas.length === 0) return null;
         return palabrasFiltradas[Math.floor(Math.random() * palabrasFiltradas.length)];
     }
 
-    function obtenerSilabas(palabraNORMALIZADA) { /* ... (sin cambios) ... */
+    function obtenerSilabas(palabraNORMALIZADA) {
         if (!palabraNORMALIZADA) return [];
         const VOCALES_MAYUS = "AEIOUÁÉÍÓÚÜ";
         const silabasRegex = new RegExp( `[^${VOCALES_MAYUS}]*[${VOCALES_MAYUS}]+(?:[^${VOCALES_MAYUS}]+(?![${VOCALES_MAYUS}])|[^${VOCALES_MAYUS}]*(?=$))`, 'gi');
         let matches = palabraNORMALIZADA.match(silabasRegex);
         if (matches && matches.length > 0) return matches.filter(s => s && s.length > 0).map(s => s.toUpperCase());
-        return [palabraNORMALIZADA];
+        return [palabraNORMALIZADA]; // Fallback
     }
 
-    function obtenerUltimaSilaba(palabraNORMALIZADA) { /* ... (sin cambios) ... */
+    function obtenerUltimaSilaba(palabraNORMALIZADA) {
         const silabas = obtenerSilabas(palabraNORMALIZADA);
         if (silabas && silabas.length > 0) return silabas[silabas.length - 1];
         return null;
     }
 
-    function resaltarSilabaEnPantalla(palabra, silaba) { /* ... (sin cambios) ... */
+    function resaltarSilabaEnPantalla(palabra, silaba) {
         palabra = palabra.toUpperCase();
         silaba = silaba.toUpperCase();
         const indiceUltimaSilaba = palabra.lastIndexOf(silaba);
@@ -152,8 +152,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
              if (palabra.endsWith(silaba)) {
                  challengeWordDisplay.innerHTML = palabra.substring(0, palabra.length - silaba.length) + `<span class="highlight">${palabra.substring(palabra.length - silaba.length)}</span>`;
-            } else {
-                challengeWordDisplay.innerHTML = palabra + ` (<span class="highlight">${silaba.toUpperCase()}</span>?)`;
+            } else { // Fallback si la sílaba no coincide exactamente
+                challengeWordDisplay.innerHTML = palabra + ` (<span class="highlight">${silaba}</span>?)`;
             }
         }
     }
@@ -161,34 +161,42 @@ document.addEventListener('DOMContentLoaded', () => {
     function procesarEntradaVoz(evento) {
         if (!estaJugando) return;
         
-        palabraProcesadaEnTurnoActual = true; // Marcar que una palabra fue procesada
-        // speechRecognitionActivo se volverá false en el onend que sigue a este onresult.
-        // clearTimeout(temporizadorId); // NO detener el timer aquí, queremos que siga hasta 0 o hasta el próximo turno.
-                                       // SÍ lo detenemos porque una palabra fue dicha y será validada. Si es correcta,
-                                       // el timer se reinicia para el siguiente turno. Si es incorrecta, el juego termina.
+        palabraProcesadaEnTurnoActual = true;
         clearTimeout(temporizadorId);
 
         let palabraUsuario = evento.results[0][0].transcript;
         palabraUsuario = normalizarTexto(palabraUsuario); 
         
-        if (!palabraUsuario) { // Esto es raro si onresult se dispara, pero por si acaso.
-            // statusDisplay.textContent = 'No entendí. Intenta de nuevo.'; // El onend se encargará de reiniciar si es necesario.
-            palabraProcesadaEnTurnoActual = false; // No se procesó realmente, permitir que onend reinicie
+        if (!palabraUsuario) {
+            palabraProcesadaEnTurnoActual = false; // No se procesó realmente
             iniciarTemporizador(); // Reiniciar timer para este intento
-            // iniciarEscucha(); // onend lo hará si es necesario
             return;
         }
         
         messageDisplay.textContent = `Dijiste: ${palabraUsuario}`;
 
+        if (palabrasDichasPorJugador.has(palabraUsuario)) {
+            terminarJuego(`Ya dijiste "${palabraUsuario}". ¡Intenta con otra!`);
+            return;
+        }
+
         if (palabraUsuario.startsWith(silabaObjetivo)) { 
-            const silabasUsuario = obtenerSilabas(palabraUsuario);
-            if (!silabasUsuario || silabasUsuario.length === 0) {
-                terminarJuego(`"${palabraUsuario}" no parece una palabra válida.`);
-                return;
-            }
-            puntuacion += silabasUsuario.length;
+            // const silabasUsuario = obtenerSilabas(palabraUsuario); // Ya no se usa para puntuación
+            // if (!silabasUsuario || silabasUsuario.length === 0) {
+            //     terminarJuego(`"${palabraUsuario}" no parece una palabra válida.`);
+            //     return;
+            // }
+
+            // *** PUNTUACIÓN BASADA EN LONGITUD DE PALABRA DEL USUARIO ***
+            const puntosGanados = palabraUsuario.length;
+            puntuacion += puntosGanados;
             actualizarPuntuacion(puntuacion);
+            messageDisplay.textContent = `¡Correcto! "${palabraUsuario}" te da ${puntosGanados} puntos.`;
+
+
+            palabrasDichasPorJugador.add(palabraUsuario);
+            actualizarListaPalabrasDichasPorJugador();
+
             const proximaSilabaInicial = obtenerUltimaSilaba(palabraUsuario);
 
             if (!proximaSilabaInicial) {
@@ -196,23 +204,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
-            const nuevaPalabraDesafio = seleccionarPalabraAleatoria(proximaSilabaInicial);
+            const nuevaPalabraDesafio = seleccionarPalabraAleatoriaIA(proximaSilabaInicial);
 
             if (nuevaPalabraDesafio) {
                 palabraDesafioActual = nuevaPalabraDesafio;
                 const nuevaUltimaSilaba = obtenerUltimaSilaba(palabraDesafioActual);
                 if (!nuevaUltimaSilaba) {
-                    terminarJuego(`Error al obtener sílaba de nueva palabra: "${palabraDesafioActual}".`);
+                    terminarJuego(`Error al obtener sílaba de nueva palabra IA: "${palabraDesafioActual}".`);
                     return;
                 }
                 silabaObjetivo = nuevaUltimaSilaba;
                 resaltarSilabaEnPantalla(palabraDesafioActual, silabaObjetivo);
                 
-                palabraProcesadaEnTurnoActual = false; // Resetear para el nuevo turno
-                iniciarTemporizador(); // Reinicia timer Y escucha para el nuevo turno
+                palabraProcesadaEnTurnoActual = false; 
+                iniciarTemporizador(); 
                 iniciarEscucha(); 
             } else {
-                terminarJuego(`¡Increíble! No encontré palabra que empiece con "${proximaSilabaInicial.toUpperCase()}". ¡Ganaste!`);
+                terminarJuego(`¡Increíble! La IA no encontró palabra que empiece con "${proximaSilabaInicial.toUpperCase()}". ¡Has ganado!`);
             }
         } else {
             terminarJuego(`Incorrecto. "${palabraUsuario}" no empieza con "${silabaObjetivo.toUpperCase()}".`);
@@ -221,57 +229,55 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function manejarErrorVoz(evento) {
         if (!estaJugando) return;
-        // speechRecognitionActivo se volverá false en el onend que sigue a este onerror.
         
-        // console.error("Error de voz:", evento.error, evento.message);
-
         if (evento.error === 'no-speech') {
             statusDisplay.textContent = "No se detectó voz. Sigo escuchando...";
-            // No hacemos nada aquí directamente. El `onend` que sigue a 'no-speech'
-            // se encargará de reiniciar `iniciarEscucha()` si `palabraProcesadaEnTurnoActual` es false
-            // y `tiempoRestante > 0`.
         } else if (evento.error === 'audio-capture' || evento.error === 'not-allowed') {
             const msg = evento.error === 'audio-capture' ? "Problema con el micrófono." : "Permiso de micrófono denegado.";
             terminarJuego(msg);
         } else if (evento.error === 'aborted') {
-            // Esto puede ocurrir si el temporizador llama a abort() o si el juego termina.
-            // Si el juego sigue activo y fue abortado inesperadamente, onend podría intentar reiniciar.
-            // console.log("Recognition aborted.");
             if (estaJugando && !palabraProcesadaEnTurnoActual && tiempoRestante > 0) {
                  statusDisplay.textContent = "Escucha interrumpida, reintentando...";
-                 // El onend que sigue se encargará de reiniciar.
             }
-        } else { // Otros errores como 'network', 'service-not-allowed', etc.
+        } else { 
             statusDisplay.textContent = `Error de reconocimiento: ${evento.error}. Sigo intentando...`;
-            // Similar a 'no-speech', dejamos que onend intente reiniciar si es apropiado.
         }
     }
 
-    function actualizarPuntuacion(nuevaPuntuacion) { /* ... (sin cambios) ... */
+    function actualizarPuntuacion(nuevaPuntuacion) {
         puntuacion = nuevaPuntuacion;
         scoreDisplay.textContent = `Puntuación: ${puntuacion}`;
+    }
+
+    function actualizarListaPalabrasDichasPorJugador() {
+        if (!usedWordsPlayerList) return;
+        usedWordsPlayerList.innerHTML = '';
+        palabrasDichasPorJugador.forEach(palabra => {
+            const li = document.createElement('li');
+            li.textContent = palabra;
+            usedWordsPlayerList.appendChild(li);
+        });
+        const container = document.getElementById('usedWordsPlayerContainer');
+        if (container) container.scrollTop = container.scrollHeight;
     }
 
     function iniciarTemporizador() {
         clearTimeout(temporizadorId);
         tiempoRestante = 10;
         timerDisplay.textContent = `Tiempo: ${tiempoRestante}s`;
-        // palabraProcesadaEnTurnoActual se resetea al inicio del turno (iniciarJuego o después de un acierto)
         
         temporizadorId = setInterval(() => {
             tiempoRestante--;
             timerDisplay.textContent = `Tiempo: ${tiempoRestante}s`;
             if (tiempoRestante < 0) tiempoRestante = 0; 
-
             if (tiempoRestante === 0) {
                 clearTimeout(temporizadorId);
-                if (estaJugando && !palabraProcesadaEnTurnoActual) { // Si no se procesó palabra, termina el juego
+                if (estaJugando && !palabraProcesadaEnTurnoActual) { 
                     if (speechRecognitionActivo && recognition) {
                         recognition.abort(); 
                     }
                     terminarJuego("¡Tiempo agotado!");
                 }
-                // Si una palabra fue procesada, el juego ya habría terminado o pasado al siguiente turno.
             }
         }, 1000);
     }
@@ -286,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
         speechRecognitionActivo = false;
         
         messageDisplay.textContent = `${mensajeFinal} Puntuación final: ${puntuacion}.`;
-        if (palabrasCargadas && listaPalabras.length > 0) {
+        if (palabrasCargadas && listaPalabrasIA.length > 0) {
             statusDisplay.textContent = 'Presiona "Comenzar Juego" para jugar de nuevo.';
             startButton.disabled = false;
         } else {
@@ -297,12 +303,13 @@ document.addEventListener('DOMContentLoaded', () => {
         timerDisplay.textContent = `Tiempo: -`;
     }
 
-    function normalizarTexto(texto) { /* ... (sin cambios) ... */
+    function normalizarTexto(texto) {
         if (!texto) return '';
+        // Quitar espacios múltiples y al inicio/fin, convertir a MAYUS, quitar acentos y puntuación.
         return texto.trim().toUpperCase()
-            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "") 
             .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()¿?¡"]/g,"")
-            .replace(/\s+/g, ' ');
+            .replace(/\s\s+/g, ' '); // Reemplaza múltiples espacios internos por uno solo
     }
 
     startButton.addEventListener('click', iniciarJuego);
