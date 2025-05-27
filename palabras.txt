@@ -61,7 +61,9 @@ ganar
 ganas
 ganador
 ganado
-
+raro
+rarisimo
+mosaico
 Barco
 Bestia
 Birra
