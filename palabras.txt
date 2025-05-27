@@ -57,6 +57,10 @@ Alto
 Antes
 Arco
 Aura
+ganar
+ganas
+ganador
+ganado
 
 Barco
 Bestia
