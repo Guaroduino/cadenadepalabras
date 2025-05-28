@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         recognition = new SpeechRecognition();
         recognition.lang = 'es-ES';
-        recognition.continuous = false; // Se mantiene false, la lógica de re-escucha está en onend
+        recognition.continuous = false;
         recognition.interimResults = false;
         recognition.onresult = procesarEntradaVoz;
         recognition.onerror = manejarErrorVoz;
@@ -201,17 +201,24 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             scorePlayer1Display.classList.remove('active-turn');
             scorePlayer2Display.classList.remove('active-turn');
-            palabraAnteriorGlobal = seleccionarPalabraAleatoriaIA();
+
+            const resultadoSeleccionIA = seleccionarPalabraAleatoriaIA(); 
+            palabraAnteriorGlobal = resultadoSeleccionIA.palabra; 
+
             if (!palabraAnteriorGlobal) {
-                terminarJuego("Error: No se pudo seleccionar palabra inicial para la IA.");
+                terminarJuego("Error: No se pudo seleccionar palabra inicial para la IA (lista vacía o todas usadas).");
                 return;
             }
+            // La primera palabra de la IA se añade a usadas
+            palabrasUsadasGlobal.add(palabraAnteriorGlobal);
+            actualizarListaPalabrasUsadas();
+
             const ultimaSilaba = obtenerUltimaSilaba(palabraAnteriorGlobal);
             if (!ultimaSilaba) {
                 terminarJuego(`Error al obtener sílaba de: "${palabraAnteriorGlobal}".`);
                 return;
             }
-            silabaObjetivoGlobal = ultimaSilaba;
+            silabaObjetivoGlobal = ultimaSilaba; 
             resaltarSilabaEnPantalla(palabraAnteriorGlobal, silabaObjetivoGlobal);
             tiempoRestante = TIEMPO_TURNO_NORMAL;
 
@@ -228,72 +235,112 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function seleccionarPalabraAleatoriaIA(silabaInicialRequerida = null) {
-        let palabrasFiltradas = listaPalabrasIA;
-        if (silabaInicialRequerida) {
-            const silabaNorm = normalizarTexto(silabaInicialRequerida);
-            palabrasFiltradas = listaPalabrasIA.filter(p => normalizarTexto(p).startsWith(silabaNorm));
+        let palabraEncontrada = null;
+        let silabaDeBusquedaActual = silabaInicialRequerida ? normalizarTexto(silabaInicialRequerida) : null;
+        let tipoFallback = null; // null, '2letras', '1letra'
+
+        // Intento 1: Sílaba completa (si se proporciona)
+        if (silabaDeBusquedaActual) {
+            let palabrasFiltradas = listaPalabrasIA.filter(p => normalizarTexto(p).startsWith(silabaDeBusquedaActual) && !palabrasUsadasGlobal.has(p));
+            if (palabrasFiltradas.length > 0) {
+                palabraEncontrada = palabrasFiltradas[Math.floor(Math.random() * palabrasFiltradas.length)];
+            }
         }
-        if (palabrasFiltradas.length === 0) return null;
-        return palabrasFiltradas[Math.floor(Math.random() * palabrasFiltradas.length)];
+
+        // Intento 2: Fallback a 2 últimas letras (si aplica y el intento 1 falló)
+        if (!palabraEncontrada && silabaDeBusquedaActual && silabaDeBusquedaActual.length >= 3) {
+            const dosUltimas = silabaDeBusquedaActual.slice(-2);
+            // console.log(`IA Fallback 2L: No encontró con "${silabaDeBusquedaActual}", intentando con "${dosUltimas}"`);
+            let palabrasFiltradas = listaPalabrasIA.filter(p => normalizarTexto(p).startsWith(dosUltimas) && !palabrasUsadasGlobal.has(p));
+            if (palabrasFiltradas.length > 0) {
+                palabraEncontrada = palabrasFiltradas[Math.floor(Math.random() * palabrasFiltradas.length)];
+                tipoFallback = '2letras';
+                silabaDeBusquedaActual = dosUltimas; // Actualizar para el mensaje
+            }
+        }
+
+        // Intento 3: Fallback a 1 última letra (si aplica y los intentos anteriores fallaron)
+        if (!palabraEncontrada && silabaInicialRequerida && silabaInicialRequerida.length >= 2) { // Usar silabaInicialRequerida para la longitud original
+            const ultimaLetra = normalizarTexto(silabaInicialRequerida).slice(-1);
+             // console.log(`IA Fallback 1L: No encontró, intentando con "${ultimaLetra}"`);
+            let palabrasFiltradas = listaPalabrasIA.filter(p => normalizarTexto(p).startsWith(ultimaLetra) && !palabrasUsadasGlobal.has(p));
+            if (palabrasFiltradas.length > 0) {
+                palabraEncontrada = palabrasFiltradas[Math.floor(Math.random() * palabrasFiltradas.length)];
+                tipoFallback = '1letra';
+                silabaDeBusquedaActual = ultimaLetra; // Actualizar para el mensaje
+            }
+        }
+        
+        // Si es la primera palabra de la IA (sin sílaba requerida)
+        if (!silabaInicialRequerida && !palabraEncontrada) {
+            let palabrasDisponibles = listaPalabrasIA.filter(p => !palabrasUsadasGlobal.has(p));
+            if (palabrasDisponibles.length > 0) {
+                 palabraEncontrada = palabrasDisponibles[Math.floor(Math.random() * palabrasDisponibles.length)];
+            } else { 
+                console.warn("IA: No quedan palabras disponibles en la lista general.");
+            }
+        }
+
+        return { 
+            palabra: palabraEncontrada, 
+            silabaBuscadaOriginal: silabaInicialRequerida, // La sílaba que se le pasó originalmente
+            silabaDeBusquedaFinal: palabraEncontrada ? silabaDeBusquedaActual : null, // Con qué sílaba (o parte) la encontró
+            tipoFallback: palabraEncontrada && silabaInicialRequerida && !palabraEncontrada.startsWith(normalizarTexto(silabaInicialRequerida)) ? tipoFallback : null
+        };
     }
 
 
     function procesarEntradaVoz(evento) {
         if (!estaJugando) return;
         
-        // palabraProcesadaEnTurnoActual se setea a true DESPUÉS de encontrar una palabra válida
         clearTimeout(temporizadorId);
 
         let transcriptCompleto = evento.results[0][0].transcript;
-        let palabraValidaEncontrada = null; // Para almacenar la primera palabra válida de la frase
-        let errorEnPalabra = null; // Para almacenar el primer error encontrado
+        let palabraValidaEncontrada = null;
+        let errorEnPalabra = null; 
 
         if (transcriptCompleto) {
             const palabrasDelTranscript = transcriptCompleto.trim().split(/\s+/);
             
             for (const palabraRaw of palabrasDelTranscript) {
                 const palabraCandidata = normalizarTexto(palabraRaw);
-                if (!palabraCandidata) continue; // Ignorar palabras vacías después de normalizar
+                if (!palabraCandidata) continue;
 
-                // 1. ¿Comienza con la sílaba objetivo? (Ignorar para la primera palabra en 2P si palabraAnteriorGlobal está vacía)
                 if (palabraAnteriorGlobal !== '' && !palabraCandidata.startsWith(silabaObjetivoGlobal)) {
                     if (!errorEnPalabra) errorEnPalabra = `"${palabraCandidata}" no empieza con "${silabaObjetivoGlobal.toUpperCase()}".`;
-                    continue; // Probar la siguiente palabra de la frase
+                    continue;
                 }
-
-                // 2. ¿Palabra ya usada?
                 if (palabrasUsadasGlobal.has(palabraCandidata)) {
                     if (!errorEnPalabra) errorEnPalabra = `"${palabraCandidata}" ya fue dicha.`;
-                    continue; // Probar la siguiente palabra de la frase
+                    continue;
                 }
                 
-                // Si pasa todas las validaciones, es una palabra válida
                 palabraValidaEncontrada = palabraCandidata;
-                break; // Salir del bucle, ya encontramos una palabra válida
+                break;
             }
         }
 
         if (palabraValidaEncontrada) {
-            palabraProcesadaEnTurnoActual = true; // Ahora sí, una palabra fue procesada con éxito
-            const palabraUsuario = palabraValidaEncontrada; // Usar la palabra encontrada
-
-            messageDisplay.textContent = modoDeJuego === '1P' ? `Usaste: ${palabraUsuario}` : `Jugador ${jugadorActual2P} usó: ${palabraUsuario}`;
+            palabraProcesadaEnTurnoActual = true;
+            const palabraUsuario = palabraValidaEncontrada;
 
             const puntosGanados = palabraUsuario.length;
             if (modoDeJuego === '1P') {
                 puntuacionJ1 += puntosGanados;
                 messageDisplay.textContent = `¡Correcto! "${palabraUsuario}" (+${puntosGanados} pts).`;
                 messageDisplay.className = 'success'; 
-            } else { // 2P
+            } else { 
                 if (jugadorActual2P === 1) puntuacionJ1 += puntosGanados;
                 else puntuacionJ2 += puntosGanados;
                 messageDisplay.textContent = `¡Jugador ${jugadorActual2P} acierta con "${palabraUsuario}"! (+${puntosGanados} pts).`;
                 messageDisplay.className = 'success';
             }
             actualizarPuntuaciones();
+            
             palabrasUsadasGlobal.add(palabraUsuario);
             actualizarListaPalabrasUsadas();
-            palabraAnteriorGlobal = palabraUsuario; // Actualizar la palabra anterior para el siguiente turno
+            
+            palabraAnteriorGlobal = palabraUsuario;
             const proximaSilabaParaObjetivo = obtenerUltimaSilaba(palabraUsuario);
 
             if (!proximaSilabaParaObjetivo) {
@@ -303,10 +350,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             silabaObjetivoGlobal = proximaSilabaParaObjetivo;
 
-            // Continuar con el flujo del juego (turno de IA o siguiente jugador)
             if (modoDeJuego === '1P') {
-                const nuevaPalabraIA = seleccionarPalabraAleatoriaIA(silabaObjetivoGlobal);
+                const resultadoIA = seleccionarPalabraAleatoriaIA(silabaObjetivoGlobal);
+                const nuevaPalabraIA = resultadoIA.palabra;
+
                 if (nuevaPalabraIA) {
+                    palabrasUsadasGlobal.add(nuevaPalabraIA);
+                    actualizarListaPalabrasUsadas();
                     palabraAnteriorGlobal = nuevaPalabraIA;
                     const nuevaUltimaSilabaIA = obtenerUltimaSilaba(nuevaPalabraIA);
                     if (!nuevaUltimaSilabaIA) {
@@ -315,7 +365,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     silabaObjetivoGlobal = nuevaUltimaSilabaIA;
                     setTimeout(() => {
-                        messageDisplay.textContent = `IA dice: "${nuevaPalabraIA}". ¡Tu turno!`;
+                        let mensajeIaDice = `IA dice: "${nuevaPalabraIA}".`;
+                        if (resultadoIA.tipoFallback) { // Si se usó un fallback
+                            mensajeIaDice += ` (usando "${resultadoIA.silabaDeBusquedaFinal.toUpperCase()}" de "${resultadoIA.silabaBuscadaOriginal.toUpperCase()}")`;
+                        }
+                        messageDisplay.textContent = `${mensajeIaDice} ¡Tu turno!`;
                         messageDisplay.className = ''; 
                         resaltarSilabaEnPantalla(nuevaPalabraIA, silabaObjetivoGlobal);
                         palabraProcesadaEnTurnoActual = false; 
@@ -324,41 +378,44 @@ document.addEventListener('DOMContentLoaded', () => {
                         iniciarEscucha(); 
                     }, 1800);
                 } else {
-                    terminarJuego(`¡Increíble! La IA no encontró palabra para "${silabaObjetivoGlobal.toUpperCase()}". ¡Has ganado!`);
+                    terminarJuego(`¡Increíble! La IA no encontró palabra para "${resultadoIA.silabaBuscadaOriginal ? resultadoIA.silabaBuscadaOriginal.toUpperCase() : 'sílaba previa'}". ¡Has ganado!`);
                 }
-            } else { // modoDeJuego === '2P'
+            } else { 
                 jugadorActual2P = (jugadorActual2P === 1) ? 2 : 1;
                 turnInfoDisplay.textContent = `Turno: Jugador ${jugadorActual2P}`;
                 actualizarResaltadoTurno2P();
                 messageDisplay.textContent = `Turno del Jugador ${jugadorActual2P}.`;
                 messageDisplay.className = ''; 
-                resaltarSilabaEnPantalla(palabraAnteriorGlobal, silabaObjetivoGlobal); // Muestra la palabra que acaba de decir el jugador anterior
+                resaltarSilabaEnPantalla(palabraAnteriorGlobal, silabaObjetivoGlobal);
                 palabraProcesadaEnTurnoActual = false; 
                 tiempoRestante = TIEMPO_TURNO_NORMAL;
                 iniciarTemporizador(); 
                 iniciarEscucha(); 
             }
 
-        } else { // No se encontró ninguna palabra válida en la frase, o el transcript estaba vacío
-            palabraProcesadaEnTurnoActual = false; // No se procesó nada con éxito
-            if (errorEnPalabra) { // Si hubo un error específico con la primera palabra intentada
+        } else { 
+            palabraProcesadaEnTurnoActual = false; 
+            if (errorEnPalabra) { 
                 const perdedor = modoDeJuego === '1P' ? null : (jugadorActual2P === 1 ? 2 : 1);
                 terminarJuego(errorEnPalabra, perdedor);
-            } else { // Si simplemente no se dijo nada o nada útil
+            } else { 
                 statusDisplay.textContent = "No entendí ninguna palabra válida en la frase. Intenta de nuevo.";
-                // Dejar que onend reinicie la escucha si el tiempo no ha acabado
             }
         }
     }
     
-    // --- FUNCIONES AUXILIARES (Silabificación, Normalización, UI, etc.) ---
+    // --- FUNCIONES AUXILIARES ---
     function obtenerSilabas(palabraNORMALIZADA) {
+        if (typeof palabraNORMALIZADA !== 'string') {
+            console.error("Error en obtenerSilabas: palabraNORMALIZADA no es un string. Valor:", palabraNORMALIZADA);
+            return [String(palabraNORMALIZADA).toUpperCase()];
+        }
         if (!palabraNORMALIZADA) return [];
         const VOCALES_MAYUS = "AEIOUÁÉÍÓÚÜ";
         const silabasRegex = new RegExp( `[^${VOCALES_MAYUS}]*[${VOCALES_MAYUS}]+(?:[^${VOCALES_MAYUS}]+(?![${VOCALES_MAYUS}])|[^${VOCALES_MAYUS}]*(?=$))`, 'gi');
         let matches = palabraNORMALIZADA.match(silabasRegex);
         if (matches && matches.length > 0) return matches.filter(s => s && s.length > 0).map(s => s.toUpperCase());
-        return [palabraNORMALIZADA];
+        return [palabraNORMALIZADA.toUpperCase()];
     }
     function obtenerUltimaSilaba(palabraNORMALIZADA) {
         const silabas = obtenerSilabas(palabraNORMALIZADA);
