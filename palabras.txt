@@ -906,7 +906,8 @@ informe
 noticia
 computadora
 ordenador
-idioma extranjero
+idioma
+extranjero
 japonés
 inglés
 chino
@@ -972,7 +973,8 @@ ciencia
 aritmética
 historia
 geografía
-educación física
+educación 
+física
 deporte
 carrera
 competición
@@ -1034,7 +1036,8 @@ reducción
 crecimiento
 fondo
 frente
-Sustantivos abstractos
+Sustantivos
+abstractos
 cosa
 aspecto
 contenido
@@ -1071,7 +1074,8 @@ creación
 destrucción
 origen
 destino
-objetivo, meta
+objetivo
+meta
 función
 relación
 realidad
@@ -1105,9 +1109,13 @@ avance
 retroceso
 mejora
 deterioro
-comienzo, inicio, principio
+comienzo
+inicio
+principio
 transcurso
-fin, final, cabo
+fin
+final
+cabo
 etapa
 fase
 paso
@@ -1154,8 +1162,10 @@ recuerdo
 deseo
 alegría
 tristeza
-enojo, enfado
-placer, éxtasis
+enojo
+enfado
+placer
+éxtasis
 empatía
 interés
 aburrimiento
@@ -1167,15 +1177,18 @@ confianza
 miedo, temor
 ejemplo
 Adjetivos
-Adjetivos de calidad
-bueno, buen
+Adjetivos
+calidad
+bueno
+buen
 malo
 superior
 inferior
 central
 lateral
 frontal
-trasero, posterior
+trasero
+posterior
 cierto
 real
 falso
@@ -1196,8 +1209,11 @@ dado
 actual
 reciente
 capaz
-fácil, simple, sencillo
-difícil, complicado
+fácil
+simple
+sencillo
+difícil
+complicado
 posible
 imposible
 probable
@@ -1210,15 +1226,22 @@ común
 especial
 usual
 único
-raro, extraño
+raro
+extraño
 fuerte
 débil
-correcto, acertado
-incorrecto, desacertado
-contrario, opuesto, inverso
+correcto
+acertado
+incorrecto
+desacertado
+contrario
+opuesto
+inverso
 igual
-diferente, distinto
-parecido, similar
+diferente
+distinto
+parecido
+similar
 otro
 diverso
 manual
@@ -1240,7 +1263,8 @@ propio
 ajeno
 público
 privado
-Adjetivos de forma
+Adjetivos
+forma
 alto
 bajo
 gran
@@ -1251,7 +1275,8 @@ angosto
 compacto
 delgado
 grueso
-Adjetivos sensoriales
+Adjetivos
+sensoriales
 caliente
 frío
 ligero
@@ -1264,7 +1289,8 @@ blando
 caluroso
 frío
 fresco
-delicioso, apetitoso
+delicioso
+apetitoso
 horrible
 dulce
 picante
@@ -1279,14 +1305,17 @@ junto
 unido
 separado
 alejado
-Adjetivos de sentimientos y sensaciones
+Adjetivos
+sentimientos
+sensaciones
 feliz
 triste
 solo
 solitario
 contento
 tranquilo
-enojado, enfadado
+enojado
+enfadado
 calmo
 agitado
 ansioso
@@ -1295,12 +1324,18 @@ aburrido
 encantado
 cansado
 sorprendido
-asustado, atemorizado
+asustado
+atemorizado
 doloroso
-picante, ardiente
-apestoso, maloliente
-Adjetivos ordinales
-primer, primero, primera
+picante
+ardiente
+apestoso
+maloliente
+Adjetivos
+ordinales
+primer
+primero
+primera
 segundo
 tercero
 cuarto
@@ -1310,12 +1345,12 @@ centésimo
 millonésimo
 penúltimo
 último
-Adjetivos posesivos
-mi
-tu
-su
-nuestro, nuestra
-vuestro, vuestra
+Adjetivos
+posesivos
+nuestro
+nuestra
+vuestro
+vuestra
 Verbos
 Auxiliares
 ser
@@ -1332,7 +1367,6 @@ nacer
 morir
 revivir
 Movimiento
-ir
 venir
 volver
 partir
@@ -1345,7 +1379,8 @@ lanzar
 coger
 agarrar
 poner
-quitar, sacar
+quitar
+sacar
 alcanzar
 acercar
 alejar
@@ -1358,7 +1393,7 @@ sujetar
 golpear
 patear
 poner
-quitar, sacar
+quitar
 alcanzar
 acercar
 alejar
@@ -1369,7 +1404,8 @@ pegar
 Sensaciones
 sentir
 ver
-oír, escuchar
+oír
+escuchar
 tocar
 oler
 percibir
@@ -1377,12 +1413,16 @@ Emociones
 amar
 querer
 desear
-odiar, detestar
+odiar
+detestar
 entristecerse
 llorar
 reír
-enojarse, enfadarse
-admirar, alabar, elogiar
+enojarse
+enfadarse
+admirar
+alabar
+elogiar
 alegrarse
 encantarse
 consolar
@@ -1390,7 +1430,8 @@ interesarse
 aburrirse
 cansarse
 sorprenderse
-asustarse, atemorizarse
+asustarse
+atemorizarse
 Actividades
 comunicarse
 afirmar
@@ -1412,7 +1453,8 @@ beber
 acordar
 afectar
 generar
-añadir, agregar
+añadir
+agregar
 mejorar
 empeorar
 seguir
@@ -1422,7 +1464,8 @@ ayudar
 complicar
 reunirse
 entrevistar
-abrir, desenvolver
+abrir
+desenvolver
 jugar
 tener
 faltar
@@ -1433,18 +1476,24 @@ doblar
 cortar
 comprar
 vender
-llevar puesto
+llevar
+puesto
 cambiar
 intercambiar
-sustituir, reemplazar
+sustituir
+reemplazar
 cerrar
 buscar
 encontrar
-obtener, conseguir
+obtener
+conseguir
 crear
 creer
-comenzar, iniciar, empezar
-terminar, acabar
+comenzar
+iniciar
+empezar
+terminar
+acabar
 abandonar
 dejar
 entrar
@@ -1462,11 +1511,14 @@ destruir
 deber
 poder
 conocer
-entender, comprender
+entender
+comprender
 atar
 saber
 trabajar
-separar, dividir, partir
+separar
+dividir
+partir
 descansar
 dormir
 despertar
@@ -1474,28 +1526,35 @@ aceptar
 rechazar
 descartar
 acompañar
-pedir, solicitar
+pedir
+solicitar
 pretender
 proponer
 sugerir
-usar, utilizar
+usar
+utilizar
 hacer
 fabricar
-arreglar, reparar
+arreglar
+reparar
 explicar
 mostrar
 tratar
 evitar
-probar, intentar
-comprobar, verificar
+probar
+intentar
+comprobar
+verificar
 variar
 esperar
-necesitar, precisar
+necesitar
+precisar
 significar
 parecer
 distinguir
 Adverbios
-Adverbios de cantidad
+Adverbios
+cantidad
 más
 menos
 muy
@@ -1510,7 +1569,8 @@ bastante
 justo
 demasiado
 etcétera
-solo, solamente
+solo
+solamente
 tan
 tanto
 todo
@@ -1520,7 +1580,8 @@ cuándo
 cuánto
 cuál, cuáles
 dónde
-Adverbios de calidad
+Adverbios
+calidad
 bien
 mal
 mejor
@@ -1544,20 +1605,23 @@ viceversa
 siquiera
 inicialmente
 finalmente
-Adverbios de posibilidad
+Adverbios
+posibilidad
 siempre
 nunca
 jamás
 también
 tampoco
-quizá, quizás
+quizá
+quizás
 acaso
 fácilmente
 difícilmente
 probablemente
 posiblemente
 seguramente
-Adverbios temporales
+Adverbios
+temporales
 antes
 anteriormente
 actualmente
@@ -1580,46 +1644,50 @@ hoy
 mañana
 de nuevo
 próximamente
-Adverbios de ubicación
-arriba, encima
-abajo, debajo
-adelante, delante
-atrás, detrás
-centro, medio
+Adverbios
+ubicación
+arriba
+encima
+abajo
+debajo
+adelante
+delante
+atrás
+detrás
+centro
+medio
 alrededor
 enfrente
 cerca
 lejos
-adentro, dentro
-afuera, fuera
+adentro
+dentro
+afuera
+fuera
 aquí
 acá
 ahí
 allá
 allí
-Otros adverbios
+Otros
+adverbios
 así
 adónde
 dónde
 Preposiciones
-a
 ante
 bajo
 cabe
 con
 contra
-de
 desde
 durante
-en
 entre
 hacia
 hasta
 mediante
 para
-por
 según
-sin
 sobre
 tras
 Conjunciones
@@ -1628,51 +1696,56 @@ como
 cuando
 entonces
 excepto
-ni
-o
 pero
 porque
 pues
 que
 salvo
-si
 sino
-y
 Pronombres
 Pronombres personales
-yo
-tú
-vos
 usted
-él, ella, ello
-nosotros, nosotras
-vosotros, vosotras
+él
+ella
+ello
+nosotros
+nosotras
+vosotros
+vosotras
 ustedes
-ellos, ellas
-mí, conmigo
-ti, contigo
-sí, consigo
-me
-te
-le, la, lo
-se
-nos
-os
-Pronombres posesivos
-mío, mía
-tuyo, tuya
-suyo, suya
-nuestro, nuestra
-vuestro, vuestra
-cuyo, cuya
-Pronombres indefinidos
-un, una, uno
-algún, alguna, algo
-ninguno, ninguna, nada
-varios, varias
-otro, otra
-mismo, misma
-tan, tanto, tanta
+Pronombres 
+posesivos
+mío
+mía
+tuyo
+tuya
+suyo
+suya
+nuestro
+nuestra
+vuestro
+vuestra
+cuyo
+cuya
+Pronombres
+indefinidos
+una
+uno
+algún
+alguna
+algo
+ninguno
+ninguna
+nada
+varios
+varias
+otro
+otra
+mismo
+misma
+tan
+tanto
+tanta
 alguien
 nadie
 cualquiera
