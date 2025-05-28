@@ -64,6 +64,14 @@ ganado
 raro
 rarisimo
 mosaico
+bonificacion
+bono
+bonito
+tonelada
+tonificar
+tono
+tonada
+tonto
 Barco
 Bestia
 Birra
