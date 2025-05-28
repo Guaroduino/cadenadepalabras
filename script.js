@@ -1,10 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // ... (selectores de elementos sin cambios) ...
+    // Selección de Modo
     const gameModeSelectionDiv = document.getElementById('gameModeSelection');
     const onePlayerButton = document.getElementById('onePlayerButton');
     const twoPlayerButton = document.getElementById('twoPlayerButton');
     const backToModeSelectionButton = document.getElementById('backToModeSelectionButton');
 
+    // Área de Juego
     const gameAreaDiv = document.getElementById('gameArea');
     const gameModeInfo = document.getElementById('gameModeInfo');
     const startGameButton = document.getElementById('startGameButton');
@@ -18,19 +19,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const usedWordsList = document.getElementById('usedWordsList');
     const turnInfoDisplay = document.getElementById('turnInfoDisplay');
 
-    // ... (variables de estado del juego sin cambios) ...
+
     let listaPalabrasIA = [];
     let palabrasUsadasGlobal = new Set();
+
+    // Estado del Juego
     let modoDeJuego = null;
     let puntuacionJ1 = 0;
     let puntuacionJ2 = 0;
     let jugadorActual2P = 1;
     let palabraAnteriorGlobal = '';
     let silabaObjetivoGlobal = '';
+
     let temporizadorId;
     let tiempoRestante = 10;
     const TIEMPO_TURNO_NORMAL = 10;
     const TIEMPO_PRIMER_TURNO_2P = 15;
+
     let recognition;
     let estaJugando = false;
     let palabrasCargadas = false;
@@ -39,22 +44,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-
+    // --- INICIALIZACIÓN Y SELECCIÓN DE MODO ---
     function setupGameMode(mode) {
         modoDeJuego = mode;
-        // Animar salida de selección de modo
         gameModeSelectionDiv.classList.add('fade-out');
         
-        setTimeout(() => { // Esperar que termine la animación de salida
+        setTimeout(() => {
             gameModeSelectionDiv.classList.add('hidden');
-            gameModeSelectionDiv.classList.remove('fade-out'); // Limpiar para próxima vez
-            gameAreaDiv.classList.remove('hidden'); // Esto disparará la animación de entrada de gameArea
-        }, 500); // Debe coincidir con la duración de la transición en CSS
-
+            gameModeSelectionDiv.classList.remove('fade-out');
+            gameAreaDiv.classList.remove('hidden');
+        }, 500);
 
         startGameButton.disabled = false;
         statusDisplay.textContent = 'Presiona "Comenzar Juego"';
-        messageDisplay.className = ''; // Limpiar clases de error/éxito
+        messageDisplay.className = '';
 
         if (mode === '1P') {
             gameModeInfo.textContent = "Modo: Un Jugador (vs IA)";
@@ -89,29 +92,24 @@ document.addEventListener('DOMContentLoaded', () => {
     
     backToModeSelectionButton.addEventListener('click', () => {
         terminarJuegoActualSilenciosamente();
-        // Animar salida de gameArea y entrada de gameModeSelection
-        gameAreaDiv.style.opacity = '0'; // Iniciar fade out
+        gameAreaDiv.style.opacity = '0';
         gameAreaDiv.style.transform = 'translateY(20px)';
 
         setTimeout(() => {
             gameAreaDiv.classList.add('hidden');
-            // Resetear estilos de animación para la próxima vez que se muestre gameArea
             gameAreaDiv.style.opacity = ''; 
             gameAreaDiv.style.transform = '';
-
             gameModeSelectionDiv.classList.remove('hidden');
-            // Forzar reflujo para que la animación de entrada de gameModeSelection funcione
             void gameModeSelectionDiv.offsetWidth; 
             gameModeSelectionDiv.style.opacity = '1';
             gameModeSelectionDiv.style.transform = 'translateY(0)';
-
-        }, 300); // Duración de la animación de salida de gameArea
+        }, 300);
         
         modoDeJuego = null;
     });
 
 
-    async function cargarListaPalabrasIA() { /* ... (sin cambios) ... */
+    async function cargarListaPalabrasIA() {
         if (palabrasCargadas) return;
         statusDisplay.textContent = 'Cargando palabras para la IA...';
         startGameButton.disabled = true;
@@ -130,12 +128,12 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Error al cargar la lista de palabras de la IA:", error);
             statusDisplay.textContent = 'Error al cargar palabras para IA. Intenta recargar.';
             messageDisplay.textContent = 'No se pudo cargar la lista de palabras para la IA.';
-            messageDisplay.className = 'error'; // Aplicar clase de error
+            messageDisplay.className = 'error';
             startGameButton.disabled = true;
         }
     }
 
-    if (!SpeechRecognition) { /* ... (sin cambios) ... */
+    if (!SpeechRecognition) {
         statusDisplay.textContent = "Tu navegador no soporta reconocimiento de voz. Prueba con Chrome o Edge.";
         onePlayerButton.disabled = true;
         twoPlayerButton.disabled = true;
@@ -143,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         recognition = new SpeechRecognition();
         recognition.lang = 'es-ES';
-        recognition.continuous = false;
+        recognition.continuous = false; // Se mantiene false, la lógica de re-escucha está en onend
         recognition.interimResults = false;
         recognition.onresult = procesarEntradaVoz;
         recognition.onerror = manejarErrorVoz;
@@ -159,7 +157,9 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    function iniciarEscucha() { /* ... (sin cambios) ... */
+    // --- LÓGICA DE JUEGO (ADAPTABLE) ---
+
+    function iniciarEscucha() {
         if (!estaJugando || speechRecognitionActivo || !modoDeJuego) return;
         if (recognition) {
             try {
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function iniciarJuego() { /* ... (sin cambios lógicos mayores, solo UI) ... */
+    function iniciarJuego() {
         if (!modoDeJuego) return;
         puntuacionJ1 = 0;
         puntuacionJ2 = 0;
@@ -184,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
         actualizarListaPalabrasUsadas();
         actualizarPuntuaciones();
         messageDisplay.textContent = '';
-        messageDisplay.className = ''; // Limpiar clase de error
+        messageDisplay.className = '';
         startGameButton.disabled = true;
         backToModeSelectionButton.classList.add('hidden');
         estaJugando = true;
@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
         iniciarEscucha();
     }
 
-    function seleccionarPalabraAleatoriaIA(silabaInicialRequerida = null) { /* ... (sin cambios) ... */
+    function seleccionarPalabraAleatoriaIA(silabaInicialRequerida = null) {
         let palabrasFiltradas = listaPalabrasIA;
         if (silabaInicialRequerida) {
             const silabaNorm = normalizarTexto(silabaInicialRequerida);
@@ -238,92 +238,121 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    function procesarEntradaVoz(evento) { /* ... (adaptación de mensajes con clases) ... */
+    function procesarEntradaVoz(evento) {
         if (!estaJugando) return;
-        palabraProcesadaEnTurnoActual = true;
-        clearTimeout(temporizadorId);
-        let palabraUsuario = evento.results[0][0].transcript;
-        palabraUsuario = normalizarTexto(palabraUsuario);
-        if (!palabraUsuario) {
-            palabraProcesadaEnTurnoActual = false;
-            iniciarTemporizador();
-            return;
-        }
         
-        // messageDisplay.textContent = modoDeJuego === '1P' ? `Dijiste: ${palabraUsuario}` : `Jugador ${jugadorActual2P} dijo: ${palabraUsuario}`;
-        // No mostrar "Dijiste" aquí, el mensaje de éxito/error será más informativo
+        // palabraProcesadaEnTurnoActual se setea a true DESPUÉS de encontrar una palabra válida
+        clearTimeout(temporizadorId);
 
-        if (palabrasUsadasGlobal.has(palabraUsuario)) {
-            const perdedor = modoDeJuego === '1P' ? null : (jugadorActual2P === 1 ? 2 : 1);
-            terminarJuego(`"${palabraUsuario}" ya fue dicha.`, perdedor);
-            return;
-        }
-        if (palabraAnteriorGlobal !== '' && !palabraUsuario.startsWith(silabaObjetivoGlobal)) {
-            const perdedor = modoDeJuego === '1P' ? null : (jugadorActual2P === 1 ? 2 : 1);
-            terminarJuego(`"${palabraUsuario}" no empieza con "${silabaObjetivoGlobal.toUpperCase()}".`, perdedor);
-            return;
-        }
-        const puntosGanados = palabraUsuario.length;
-        if (modoDeJuego === '1P') {
-            puntuacionJ1 += puntosGanados;
-            messageDisplay.textContent = `¡Correcto! "${palabraUsuario}" (+${puntosGanados} pts).`;
-            messageDisplay.className = 'success'; // Asumiendo que tienes una clase .success
-        } else {
-            if (jugadorActual2P === 1) puntuacionJ1 += puntosGanados;
-            else puntuacionJ2 += puntosGanados;
-            messageDisplay.textContent = `¡Jugador ${jugadorActual2P} acierta con "${palabraUsuario}"! (+${puntosGanados} pts).`;
-            messageDisplay.className = 'success';
-        }
-        actualizarPuntuaciones();
-        palabrasUsadasGlobal.add(palabraUsuario);
-        actualizarListaPalabrasUsadas();
-        palabraAnteriorGlobal = palabraUsuario;
-        const proximaSilabaParaObjetivo = obtenerUltimaSilaba(palabraUsuario);
-        if (!proximaSilabaParaObjetivo) {
-            const perdedor = modoDeJuego === '1P' ? null : (jugadorActual2P === 1 ? 2 : 1);
-            terminarJuego(`No pude obtener la última sílaba de "${palabraUsuario}".`, perdedor);
-            return;
-        }
-        silabaObjetivoGlobal = proximaSilabaParaObjetivo;
+        let transcriptCompleto = evento.results[0][0].transcript;
+        let palabraValidaEncontrada = null; // Para almacenar la primera palabra válida de la frase
+        let errorEnPalabra = null; // Para almacenar el primer error encontrado
 
-        if (modoDeJuego === '1P') {
-            // messageDisplay.textContent += ` Turno de la IA...`; // Ya se muestra antes del timeout
-            const nuevaPalabraIA = seleccionarPalabraAleatoriaIA(silabaObjetivoGlobal);
-            if (nuevaPalabraIA) {
-                palabraAnteriorGlobal = nuevaPalabraIA;
-                const nuevaUltimaSilabaIA = obtenerUltimaSilaba(nuevaPalabraIA);
-                if (!nuevaUltimaSilabaIA) {
-                    terminarJuego("Error de la IA al obtener su propia sílaba.");
-                    return;
+        if (transcriptCompleto) {
+            const palabrasDelTranscript = transcriptCompleto.trim().split(/\s+/);
+            
+            for (const palabraRaw of palabrasDelTranscript) {
+                const palabraCandidata = normalizarTexto(palabraRaw);
+                if (!palabraCandidata) continue; // Ignorar palabras vacías después de normalizar
+
+                // 1. ¿Comienza con la sílaba objetivo? (Ignorar para la primera palabra en 2P si palabraAnteriorGlobal está vacía)
+                if (palabraAnteriorGlobal !== '' && !palabraCandidata.startsWith(silabaObjetivoGlobal)) {
+                    if (!errorEnPalabra) errorEnPalabra = `"${palabraCandidata}" no empieza con "${silabaObjetivoGlobal.toUpperCase()}".`;
+                    continue; // Probar la siguiente palabra de la frase
                 }
-                silabaObjetivoGlobal = nuevaUltimaSilabaIA;
-                setTimeout(() => {
-                    messageDisplay.textContent = `IA dice: "${nuevaPalabraIA}". ¡Tu turno!`;
-                    messageDisplay.className = ''; // Neutral
-                    resaltarSilabaEnPantalla(nuevaPalabraIA, silabaObjetivoGlobal);
-                    palabraProcesadaEnTurnoActual = false; 
-                    tiempoRestante = TIEMPO_TURNO_NORMAL;
-                    iniciarTemporizador(); 
-                    iniciarEscucha(); 
-                }, 1800); // Pausa de 1.8 segundos
-            } else {
-                terminarJuego(`¡Increíble! La IA no encontró palabra para "${silabaObjetivoGlobal.toUpperCase()}". ¡Has ganado!`);
+
+                // 2. ¿Palabra ya usada?
+                if (palabrasUsadasGlobal.has(palabraCandidata)) {
+                    if (!errorEnPalabra) errorEnPalabra = `"${palabraCandidata}" ya fue dicha.`;
+                    continue; // Probar la siguiente palabra de la frase
+                }
+                
+                // Si pasa todas las validaciones, es una palabra válida
+                palabraValidaEncontrada = palabraCandidata;
+                break; // Salir del bucle, ya encontramos una palabra válida
             }
-        } else {
-            jugadorActual2P = (jugadorActual2P === 1) ? 2 : 1;
-            turnInfoDisplay.textContent = `Turno: Jugador ${jugadorActual2P}`;
-            actualizarResaltadoTurno2P();
-            messageDisplay.textContent = `Turno del Jugador ${jugadorActual2P}.`;
-            messageDisplay.className = ''; // Neutral
-            resaltarSilabaEnPantalla(palabraAnteriorGlobal, silabaObjetivoGlobal);
-            palabraProcesadaEnTurnoActual = false; 
-            tiempoRestante = TIEMPO_TURNO_NORMAL;
-            iniciarTemporizador(); 
-            iniciarEscucha(); 
+        }
+
+        if (palabraValidaEncontrada) {
+            palabraProcesadaEnTurnoActual = true; // Ahora sí, una palabra fue procesada con éxito
+            const palabraUsuario = palabraValidaEncontrada; // Usar la palabra encontrada
+
+            messageDisplay.textContent = modoDeJuego === '1P' ? `Usaste: ${palabraUsuario}` : `Jugador ${jugadorActual2P} usó: ${palabraUsuario}`;
+
+            const puntosGanados = palabraUsuario.length;
+            if (modoDeJuego === '1P') {
+                puntuacionJ1 += puntosGanados;
+                messageDisplay.textContent = `¡Correcto! "${palabraUsuario}" (+${puntosGanados} pts).`;
+                messageDisplay.className = 'success'; 
+            } else { // 2P
+                if (jugadorActual2P === 1) puntuacionJ1 += puntosGanados;
+                else puntuacionJ2 += puntosGanados;
+                messageDisplay.textContent = `¡Jugador ${jugadorActual2P} acierta con "${palabraUsuario}"! (+${puntosGanados} pts).`;
+                messageDisplay.className = 'success';
+            }
+            actualizarPuntuaciones();
+            palabrasUsadasGlobal.add(palabraUsuario);
+            actualizarListaPalabrasUsadas();
+            palabraAnteriorGlobal = palabraUsuario; // Actualizar la palabra anterior para el siguiente turno
+            const proximaSilabaParaObjetivo = obtenerUltimaSilaba(palabraUsuario);
+
+            if (!proximaSilabaParaObjetivo) {
+                const perdedor = modoDeJuego === '1P' ? null : (jugadorActual2P === 1 ? 2 : 1);
+                terminarJuego(`No pude obtener la última sílaba de "${palabraUsuario}".`, perdedor);
+                return;
+            }
+            silabaObjetivoGlobal = proximaSilabaParaObjetivo;
+
+            // Continuar con el flujo del juego (turno de IA o siguiente jugador)
+            if (modoDeJuego === '1P') {
+                const nuevaPalabraIA = seleccionarPalabraAleatoriaIA(silabaObjetivoGlobal);
+                if (nuevaPalabraIA) {
+                    palabraAnteriorGlobal = nuevaPalabraIA;
+                    const nuevaUltimaSilabaIA = obtenerUltimaSilaba(nuevaPalabraIA);
+                    if (!nuevaUltimaSilabaIA) {
+                        terminarJuego("Error de la IA al obtener su propia sílaba.");
+                        return;
+                    }
+                    silabaObjetivoGlobal = nuevaUltimaSilabaIA;
+                    setTimeout(() => {
+                        messageDisplay.textContent = `IA dice: "${nuevaPalabraIA}". ¡Tu turno!`;
+                        messageDisplay.className = ''; 
+                        resaltarSilabaEnPantalla(nuevaPalabraIA, silabaObjetivoGlobal);
+                        palabraProcesadaEnTurnoActual = false; 
+                        tiempoRestante = TIEMPO_TURNO_NORMAL;
+                        iniciarTemporizador(); 
+                        iniciarEscucha(); 
+                    }, 1800);
+                } else {
+                    terminarJuego(`¡Increíble! La IA no encontró palabra para "${silabaObjetivoGlobal.toUpperCase()}". ¡Has ganado!`);
+                }
+            } else { // modoDeJuego === '2P'
+                jugadorActual2P = (jugadorActual2P === 1) ? 2 : 1;
+                turnInfoDisplay.textContent = `Turno: Jugador ${jugadorActual2P}`;
+                actualizarResaltadoTurno2P();
+                messageDisplay.textContent = `Turno del Jugador ${jugadorActual2P}.`;
+                messageDisplay.className = ''; 
+                resaltarSilabaEnPantalla(palabraAnteriorGlobal, silabaObjetivoGlobal); // Muestra la palabra que acaba de decir el jugador anterior
+                palabraProcesadaEnTurnoActual = false; 
+                tiempoRestante = TIEMPO_TURNO_NORMAL;
+                iniciarTemporizador(); 
+                iniciarEscucha(); 
+            }
+
+        } else { // No se encontró ninguna palabra válida en la frase, o el transcript estaba vacío
+            palabraProcesadaEnTurnoActual = false; // No se procesó nada con éxito
+            if (errorEnPalabra) { // Si hubo un error específico con la primera palabra intentada
+                const perdedor = modoDeJuego === '1P' ? null : (jugadorActual2P === 1 ? 2 : 1);
+                terminarJuego(errorEnPalabra, perdedor);
+            } else { // Si simplemente no se dijo nada o nada útil
+                statusDisplay.textContent = "No entendí ninguna palabra válida en la frase. Intenta de nuevo.";
+                // Dejar que onend reinicie la escucha si el tiempo no ha acabado
+            }
         }
     }
     
-    function obtenerSilabas(palabraNORMALIZADA) { /* (Sin cambios) */
+    // --- FUNCIONES AUXILIARES (Silabificación, Normalización, UI, etc.) ---
+    function obtenerSilabas(palabraNORMALIZADA) {
         if (!palabraNORMALIZADA) return [];
         const VOCALES_MAYUS = "AEIOUÁÉÍÓÚÜ";
         const silabasRegex = new RegExp( `[^${VOCALES_MAYUS}]*[${VOCALES_MAYUS}]+(?:[^${VOCALES_MAYUS}]+(?![${VOCALES_MAYUS}])|[^${VOCALES_MAYUS}]*(?=$))`, 'gi');
@@ -331,12 +360,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (matches && matches.length > 0) return matches.filter(s => s && s.length > 0).map(s => s.toUpperCase());
         return [palabraNORMALIZADA];
     }
-    function obtenerUltimaSilaba(palabraNORMALIZADA) { /* (Sin cambios) */
+    function obtenerUltimaSilaba(palabraNORMALIZADA) {
         const silabas = obtenerSilabas(palabraNORMALIZADA);
         if (silabas && silabas.length > 0) return silabas[silabas.length - 1];
         return null;
     }
-    function resaltarSilabaEnPantalla(palabra, silaba) { /* (Sin cambios) */
+    function resaltarSilabaEnPantalla(palabra, silaba) {
         palabra = palabra.toUpperCase();
         silaba = silaba.toUpperCase();
         if (!palabra) { challengeWordDisplay.innerHTML = "---"; return; }
@@ -351,7 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-    function manejarErrorVoz(evento) { /* (Sin cambios lógicos, solo UI) */
+    function manejarErrorVoz(evento) {
         if (!estaJugando) return;
         if (evento.error === 'no-speech') {
             statusDisplay.textContent = "No se detectó voz. Sigo escuchando...";
@@ -367,7 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
             statusDisplay.textContent = `Error reconocimiento: ${evento.error}. Intentando...`;
         }
     }
-    function actualizarPuntuaciones() { /* (Sin cambios lógicos) */
+    function actualizarPuntuaciones() {
         if (modoDeJuego === '1P') {
             scorePlayer1Display.textContent = `Puntuación: ${puntuacionJ1}`;
         } else if (modoDeJuego === '2P') {
@@ -378,7 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
             scorePlayer2Display.textContent = `Jugador 2: 0`;
         }
     }
-    function actualizarResaltadoTurno2P() { /* (Sin cambios lógicos) */
+    function actualizarResaltadoTurno2P() {
         if (modoDeJuego !== '2P') return;
         if (jugadorActual2P === 1) {
             scorePlayer1Display.classList.add('active-turn');
@@ -388,7 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
             scorePlayer2Display.classList.add('active-turn');
         }
     }
-    function actualizarListaPalabrasUsadas() { /* (Sin cambios lógicos) */
+    function actualizarListaPalabrasUsadas() {
         if (!usedWordsList) return;
         usedWordsList.innerHTML = '';
         palabrasUsadasGlobal.forEach(palabra => {
@@ -399,15 +428,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById('usedWordsPlayerContainer');
         if (container) container.scrollTop = container.scrollHeight;
     }
-    function iniciarTemporizador() { /* (Adaptado para clase de tiempo bajo) */
+    function iniciarTemporizador() {
         clearTimeout(temporizadorId);
         timerDisplay.textContent = `Tiempo: ${tiempoRestante}s`;
-        timerDisplay.classList.remove('low-time'); // Limpiar clase
+        timerDisplay.classList.remove('low-time');
 
         temporizadorId = setInterval(() => {
             tiempoRestante--;
             timerDisplay.textContent = `Tiempo: ${tiempoRestante}s`;
-            if (tiempoRestante <= 3 && tiempoRestante > 0) { // Añadir clase cuando quede poco tiempo
+            if (tiempoRestante <= 3 && tiempoRestante > 0) {
                 timerDisplay.classList.add('low-time');
             } else if (tiempoRestante <= 0) {
                 timerDisplay.classList.remove('low-time');
@@ -426,7 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, 1000);
     }
-    function terminarJuego(mensajePrincipal = "Juego Terminado", jugadorGanador2P = null) { /* (Adaptado para clases de error) */
+    function terminarJuego(mensajePrincipal = "Juego Terminado", jugadorGanador2P = null) {
         if (!estaJugando && !mensajePrincipal.includes("silenciosamente")) return;
         estaJugando = false;
         clearTimeout(temporizadorId);
@@ -434,10 +463,10 @@ document.addEventListener('DOMContentLoaded', () => {
         speechRecognitionActivo = false;
         
         let mensajeCompleto = mensajePrincipal;
-        messageDisplay.className = 'error'; // Por defecto, los mensajes de fin de juego son "errores" o finales
+        messageDisplay.className = 'error';
 
         if (mensajePrincipal.toLowerCase().includes("ganaste") || mensajePrincipal.toLowerCase().includes("¡gana jugador")) {
-            messageDisplay.className = 'success'; // Si es un mensaje de victoria
+            messageDisplay.className = 'success';
         }
 
 
@@ -467,7 +496,7 @@ document.addEventListener('DOMContentLoaded', () => {
             scorePlayer2Display.classList.remove('active-turn');
         }
     }
-    function terminarJuegoActualSilenciosamente() { /* (Sin cambios) */
+    function terminarJuegoActualSilenciosamente() {
         if (!estaJugando) return;
         estaJugando = false;
         clearTimeout(temporizadorId);
@@ -483,7 +512,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modoDeJuego === '2P') turnInfoDisplay.textContent = "Turno: ---";
     }
 
-    function normalizarTexto(texto) { /* (Sin cambios) */
+    function normalizarTexto(texto) {
         if (!texto) return '';
         return texto.trim().toUpperCase()
             .normalize("NFD").replace(/[\u0300-\u036f]/g, "") 
@@ -493,12 +522,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     startGameButton.addEventListener('click', iniciarJuego);
 
-    // Inicializar opacidad y transformación para la animación de gameModeSelection
     gameModeSelectionDiv.style.opacity = '1';
     gameModeSelectionDiv.style.transform = 'translateY(0)';
-    // Y para gameArea (estará oculto, pero para cuando se muestre)
     gameAreaDiv.style.opacity = '0'; 
     gameAreaDiv.style.transform = 'translateY(20px)';
-
-
 });
