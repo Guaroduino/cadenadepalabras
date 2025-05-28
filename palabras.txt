@@ -355,16 +355,23 @@ gente
 hombre
 mujer
 bebé
-niño, niña
+niño
+niña
 adolescente
-adulto, adulta
-anciano, anciana
-don, doña
-señor, señora
+adulto
+adulta
+anciano
+anciana
+don
+doña
+señor
+señora
 caballero
 dama
 individuo
-Cuerpo humano y salud
+Cuerpo 
+humano
+salud
 cuerpo
 pierna
 pie
@@ -393,7 +400,10 @@ mano
 muñeca
 palma
 dedo
-trasero, culo, cola, glúteos
+trasero
+culo
+cola
+glúteos
 abdomen
 hígado
 músculo
@@ -415,27 +425,42 @@ gripe
 diarrea
 salud
 enfermedad
-columna vertebral
-Familia y otras relaciones
+columna
+vertebral
+Familia
+otras
+relaciones
 familia
-amigo, amiga
-conocido, conocida
+amigo
+amiga
+conocido
+conocida
 colega
 pareja
-esposo, esposa
+esposo
+esposa
 matrimonio
 amor
 padre
 madre
-hermano, hermana
-hijo, hija
-abuelo, abuela
-bisabuelo, bisabuela
-nieto, nieta
-bisnieto, bisnieta
-primo, prima
-tío, tía
-sobrino, sobrina
+hermano
+hermana
+hijo
+hija
+abuelo
+abuela
+bisabuelo
+bisabuela
+nieto
+nieta
+bisnieto
+bisnieta
+primo
+prima
+tío
+tía
+sobrino
+sobrina
 Vida
 criatura
 especie
@@ -448,14 +473,19 @@ Geografía
 naturaleza
 campo
 bosque
-selva, jungla
+selva
+jungla
 desierto
 costa
 playa
 río
-laguna, lago
-mar, océano
-cerro, monte, montaña
+laguna
+lago
+mar
+océano
+cerro
+monte
+montaña
 luz
 energía
 Animales
@@ -464,10 +494,12 @@ perro
 gato
 vaca
 cerdo
-caballo, yegua
+caballo
+yegua
 oveja
 mono
-ratón, rata
+ratón
+rata
 tigre
 conejo
 dragón
@@ -506,13 +538,15 @@ molusco
 lagarto
 serpiente
 cocodrilo
-Plantas y alimentos
+Plantas
+alimentos
 alimento
 comida
 bebida
 vegetal
 planta
-pasto, césped
+pasto
+césped
 flor
 fruta
 semilla
@@ -532,8 +566,11 @@ avena
 cebada
 trigo
 verdura
-patatas, papas
-judías, guisantes, porotos
+patatas
+papas
+judías
+guisantes
+porotos
 rábano
 zanahoria
 manzana
@@ -550,7 +587,8 @@ Tiempo
 tiempo
 calendario
 edad
-época, era
+época
+era
 fecha
 instante
 momento
@@ -559,8 +597,9 @@ minuto
 hora
 día
 semana
-entre semana
-fin de semana
+entre
+semana
+fin
 mes
 año
 década
@@ -599,8 +638,8 @@ estrella
 galaxia
 universo
 clima
-despejado (adj.)
-nublado (adj.)
+despejado
+nublado
 lluvia
 nieve
 viento
@@ -624,21 +663,26 @@ hielo
 vapor
 fuego
 gas
-aire, atmósfera
+aire
+atmósfera
 tierra
 piso
 suelo
-metal, metálico (adj.)
+metal
+metálico
 hierro
 oro
 plata
 plomo
 sal
-barro, lodo
+barro
+lodo
 Medidas
 peso
 metro
-milímetro, centímetro, kilómetro
+milímetro
+centímetro
+kilómetro
 litro
 gramo
 kilo
@@ -678,9 +722,14 @@ político
 presidente
 ministro
 director
-parlamentario, congresista, senador, diputado
+parlamentario
+congresista
+senador
+diputado
 representante
-gobernador, intendente, alcalde
+gobernador
+intendente
+alcalde
 policía
 bomberos
 capital
@@ -716,11 +765,15 @@ boleto
 entrada
 dinero
 billete
-vuelto, cambio
-máquina expendedora
-precio, tarifa
+vuelto
+cambio
+máquina 
+expendedora
+precio
+tarifa
 valor
-Objetos hechos por el ser humano
+Objetos 
+hechos
 Hogar
 escritorio
 silla
@@ -736,10 +789,12 @@ ventana
 entrada
 hogar
 casa
-apartamento, departamento
+apartamento
+departamento
 edificio
 construcción
-elevador, ascensor
+elevador
+ascensor
 escalera
 Herramientas
 aparato
@@ -747,7 +802,9 @@ cámara
 aguja
 clavo
 hilo
-cuerda, cordel, cordón
+cuerda
+cordel
+cordón
 bolsillo
 bolso
 bolsa
@@ -756,7 +813,7 @@ parasol
 pantalla
 pomo
 llave
-trancar (verbo)
+trancar
 arma
 escultura
 libro
@@ -772,9 +829,11 @@ Ropa
 ropa
 prenda
 manga
-solapa, cuello
+solapa
+cuello
 botón
-cremallera, cierre
+cremallera
+cierre
 cinturón
 zapato
 gafas
@@ -786,16 +845,25 @@ cordones
 abrigo
 chaqueta
 calcetines
-bragas, calzón
+bragas
+calzón
 calzoncillo
-sujetador, sostén
+sujetador
+sostén
 falda
 Transportes
-transporte, transporte público, transporte privado
-tránsito, tráfico
+transporte
+transporte 
+público
+transporte
+privado
+tránsito
+tráfico
 vehículo
-tren, ferrocarril
-subterráneo, metro
+tren
+ferrocarril
+subterráneo
+metro
 camino
 vía
 ruta
@@ -803,11 +871,16 @@ calle
 carretera
 autopista
 avenida
-estación, parada
+estación
+parada
 avión
 aeropuerto
-automóvil, coche, auto
-bus, autobús, ómnibus
+automóvil
+coche
+auto
+bus
+autobús
+ómnibus
 ambulancia
 Lenguaje
 número
@@ -815,7 +888,9 @@ alfabeto
 símbolo
 punto
 coma
-raíz, origen, fuente
+raíz
+origen
+fuente
 papel
 carta
 comunicación
@@ -823,12 +898,14 @@ expresión
 voz
 texto
 periodismo
-periódico, diario
+periódico
+diario
 diccionario
 documento
 informe
 noticia
-computadora, ordenador
+computadora
+ordenador
 idioma extranjero
 japonés
 inglés
@@ -842,14 +919,17 @@ blanco
 negro
 gris
 rojo
-naranja, anaranjado
+naranja
+anaranjado
 amarillo
 verde
 celeste
 azul
 violeta
-rosa, rosado
-marrón, café
+rosa
+rosado
+marrón
+café
 Actividades
 cultura
 autor
@@ -886,7 +966,8 @@ modo
 estilo
 figura
 elemento
-uso, utilización
+uso
+utilización
 ciencia
 aritmética
 historia
@@ -894,7 +975,8 @@ geografía
 educación física
 deporte
 carrera
-competición, competencia
+competición
+competencia
 ayuda
 favor
 apoyo
@@ -927,10 +1009,12 @@ siete
 ocho
 nueve
 diez
-cien, ciento
+cien
+ciento
 mil
 millón
-Espacio y cantidad
+Espacio
+cantidad
 lugar
 posición
 movimiento
@@ -938,8 +1022,10 @@ velocidad
 aceleración
 dirección
 tamaño
-largo, longitud
-alto, altura
+largo
+longitud
+alto
+altura
 ancho
 mayoría
 minoría
