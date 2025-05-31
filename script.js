@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const onePlayerButton = document.getElementById('onePlayerButton');
     const twoPlayerButton = document.getElementById('twoPlayerButton');
     const backToModeSelectionButton = document.getElementById('backToModeSelectionButton');
+    const timeSelectionContainer = document.getElementById('timeSelectionContainer');
+    const timeOptions = document.querySelectorAll('.time-option');
 
     // Área de Juego
     const gameAreaDiv = document.getElementById('gameArea');
@@ -33,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let temporizadorId;
     let tiempoRestante = 10;
+    let tiempoSeleccionado = 10; // Tiempo por defecto
     const TIEMPO_TURNO_NORMAL = 10;
     const TIEMPO_PRIMER_TURNO_2P = 15;
 
@@ -41,6 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let palabrasCargadas = false;
     let speechRecognitionActivo = false;
     let palabraProcesadaEnTurnoActual = false;
+    let speechSynthesis = window.speechSynthesis;
+    let speaking = false;
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -65,6 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
             turnInfoDisplay.classList.add('hidden');
             challengeWordLabel.textContent = "Palabra de desafío (empieza con su última sílaba):";
             scorePlayer1Display.textContent = "Puntuación: 0";
+            timeSelectionContainer.classList.remove('hidden');
             if (!palabrasCargadas) {
                 cargarListaPalabrasIA();
             } else {
@@ -79,6 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
             turnInfoDisplay.classList.remove('hidden');
             turnInfoDisplay.textContent = "Turno: ---";
             challengeWordLabel.textContent = "Palabra anterior (la última sílaba es el objetivo):";
+            timeSelectionContainer.classList.add('hidden');
             startGameButton.disabled = false; 
         }
         challengeWordDisplay.innerHTML = '---';
@@ -108,6 +115,19 @@ document.addEventListener('DOMContentLoaded', () => {
         modoDeJuego = null;
     });
 
+    // Manejar selección de tiempo
+    timeOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            timeOptions.forEach(opt => opt.classList.remove('selected'));
+            option.classList.add('selected');
+            tiempoSeleccionado = parseInt(option.dataset.time);
+            tiempoRestante = tiempoSeleccionado;
+            timerDisplay.textContent = `Tiempo: ${tiempoSeleccionado}s`;
+        });
+    });
+
+    // Seleccionar 10 segundos por defecto
+    timeOptions[1].classList.add('selected');
 
     async function cargarListaPalabrasIA() {
         if (palabrasCargadas) return;
@@ -160,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- LÓGICA DE JUEGO (ADAPTABLE) ---
 
     function iniciarEscucha() {
-        if (!estaJugando || speechRecognitionActivo || !modoDeJuego) return;
+        if (!estaJugando) return;
         if (recognition) {
             try {
                 recognition.start();
@@ -174,6 +194,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 250);
             }
         }
+    }
+
+    function hablarPalabraIA(palabra) {
+        if (!speechSynthesis) return;
+        
+        // Cancelar cualquier síntesis de voz en curso
+        speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(palabra);
+        utterance.lang = 'es-ES';
+        utterance.rate = 0.9; // Un poco más lento para mejor comprensión
+        utterance.pitch = 1;
+        
+        utterance.onstart = () => {
+            speaking = true;
+        };
+        
+        utterance.onend = () => {
+            speaking = false;
+        };
+        
+        speechSynthesis.speak(utterance);
     }
 
     function iniciarJuego() {
@@ -222,7 +264,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             messageDisplay.textContent = `IA comienza con: "${palabraAnteriorGlobal}". ¡Tu turno!`;
             resaltarSilabaEnPantalla(palabraAnteriorGlobal, silabaObjetivoGlobal);
-            tiempoRestante = TIEMPO_TURNO_NORMAL;
+            hablarPalabraIA(palabraAnteriorGlobal);
+            tiempoRestante = tiempoSeleccionado;
 
         } else if (modoDeJuego === '2P') {
             jugadorActual2P = 1;
@@ -350,7 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             // Esta es la sílaba con la que el siguiente (IA o Jugador 2) debe empezar
-            silabaObjetivoGlobal = proximaSilabaParaObjetivo; 
+            silabaObjetivoGlobal = proximaSilabaParaObjetivo;
 
             // Continuar con el flujo del juego
             if (modoDeJuego === '1P') {
@@ -381,7 +424,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         messageDisplay.className = ''; 
                         resaltarSilabaEnPantalla(nuevaPalabraIA, silabaObjetivoGlobal); // Resaltar la última sílaba de la palabra de la IA
                         palabraProcesadaEnTurnoActual = false; 
-                        tiempoRestante = TIEMPO_TURNO_NORMAL;
+                        tiempoRestante = tiempoSeleccionado;
+                        hablarPalabraIA(nuevaPalabraIA);
                         iniciarTemporizador(); 
                         iniciarEscucha(); 
                     }, 1800);
@@ -398,6 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 resaltarSilabaEnPantalla(palabraAnteriorGlobal, silabaObjetivoGlobal); 
                 palabraProcesadaEnTurnoActual = false; 
                 tiempoRestante = TIEMPO_TURNO_NORMAL;
+                hablarPalabraIA(palabraAnteriorGlobal);
                 iniciarTemporizador(); 
                 iniciarEscucha(); 
             }
@@ -526,7 +571,9 @@ document.addEventListener('DOMContentLoaded', () => {
         estaJugando = false;
         clearTimeout(temporizadorId);
         if (recognition && speechRecognitionActivo) recognition.abort(); 
+        if (speechSynthesis && speaking) speechSynthesis.cancel();
         speechRecognitionActivo = false;
+        speaking = false;
         
         let mensajeCompleto = mensajePrincipal;
         messageDisplay.className = 'error';
@@ -567,7 +614,9 @@ document.addEventListener('DOMContentLoaded', () => {
         estaJugando = false;
         clearTimeout(temporizadorId);
         if (recognition && speechRecognitionActivo) recognition.abort();
+        if (speechSynthesis && speaking) speechSynthesis.cancel();
         speechRecognitionActivo = false;
+        speaking = false;
         palabraProcesadaEnTurnoActual = false;
         messageDisplay.textContent = "";
         messageDisplay.className = "";
