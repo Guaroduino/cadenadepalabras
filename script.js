@@ -180,14 +180,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- LÓGICA DE JUEGO (ADAPTABLE) ---
 
     function iniciarEscucha() {
-        if (!estaJugando) return;
+        if (!estaJugando || speaking) return;
         if (recognition) {
             try {
                 recognition.start();
             } catch (e) {
                 console.error("Error al iniciar recognition:", e);
                 setTimeout(() => {
-                    if (estaJugando && !speechRecognitionActivo) {
+                    if (estaJugando && !speechRecognitionActivo && !speaking) {
                         try { recognition.start(); }
                         catch (e2) { terminarJuego("No se pudo activar el micrófono."); }
                     }
@@ -209,10 +209,20 @@ document.addEventListener('DOMContentLoaded', () => {
         
         utterance.onstart = () => {
             speaking = true;
+            // Pausar el reconocimiento de voz mientras la IA habla
+            if (recognition && speechRecognitionActivo) {
+                recognition.abort();
+            }
         };
         
         utterance.onend = () => {
             speaking = false;
+            // Reanudar el reconocimiento de voz después de que la IA termine de hablar
+            if (estaJugando && !palabraProcesadaEnTurnoActual) {
+                setTimeout(() => {
+                    iniciarEscucha();
+                }, 500);
+            }
         };
         
         speechSynthesis.speak(utterance);
@@ -333,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     function procesarEntradaVoz(evento) {
-        if (!estaJugando) return;
+        if (!estaJugando || speaking) return;
         
         clearTimeout(temporizadorId);
 
@@ -429,7 +439,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         tiempoRestante = tiempoSeleccionado;
                         hablarPalabraIA(nuevaPalabraIA);
                         iniciarTemporizador(); 
-                        iniciarEscucha(); 
                     }, 1800);
                 } else {
                     terminarJuego(`¡Increíble! La IA no encontró palabra para "${resultadoIA.silabaBuscadaOriginal ? resultadoIA.silabaBuscadaOriginal.toUpperCase() : 'sílaba previa'}". ¡Has ganado!`);
