@@ -266,6 +266,8 @@ document.addEventListener('DOMContentLoaded', () => {
             resaltarSilabaEnPantalla(palabraAnteriorGlobal, silabaObjetivoGlobal);
             hablarPalabraIA(palabraAnteriorGlobal);
             tiempoRestante = tiempoSeleccionado;
+            iniciarTemporizador();
+            iniciarEscucha();
 
         } else if (modoDeJuego === '2P') {
             jugadorActual2P = 1;
@@ -274,9 +276,9 @@ document.addEventListener('DOMContentLoaded', () => {
             messageDisplay.textContent = `Jugador ${jugadorActual2P}, di cualquier palabra para empezar.`;
             challengeWordDisplay.innerHTML = '---'; // J1 dice la primera palabra, no hay silabaObjetivo aún
             tiempoRestante = TIEMPO_PRIMER_TURNO_2P;
+            iniciarTemporizador();
+            iniciarEscucha();
         }
-        iniciarTemporizador();
-        iniciarEscucha();
     }
 
     function seleccionarPalabraAleatoriaIA(silabaInicialRequerida = null) {
@@ -442,7 +444,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 resaltarSilabaEnPantalla(palabraAnteriorGlobal, silabaObjetivoGlobal); 
                 palabraProcesadaEnTurnoActual = false; 
                 tiempoRestante = TIEMPO_TURNO_NORMAL;
-                hablarPalabraIA(palabraAnteriorGlobal);
                 iniciarTemporizador(); 
                 iniciarEscucha(); 
             }
