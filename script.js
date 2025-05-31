@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
             turnInfoDisplay.classList.remove('hidden');
             turnInfoDisplay.textContent = "Turno: ---";
             challengeWordLabel.textContent = "Palabra anterior (la última sílaba es el objetivo):";
-            timeSelectionContainer.classList.add('hidden');
+            timeSelectionContainer.classList.remove('hidden');
             startGameButton.disabled = false; 
         }
         challengeWordDisplay.innerHTML = '---';
@@ -206,6 +206,17 @@ document.addEventListener('DOMContentLoaded', () => {
         utterance.lang = 'es-ES';
         utterance.rate = 0.9; // Un poco más lento para mejor comprensión
         utterance.pitch = 1;
+        utterance.volume = 1;
+        
+        // Configurar la voz en español si está disponible
+        const voices = speechSynthesis.getVoices();
+        const spanishVoice = voices.find(voice => voice.lang.includes('es'));
+        if (spanishVoice) {
+            utterance.voice = spanishVoice;
+        }
+        
+        // Agregar un pequeño espacio al final para mejor pronunciación
+        utterance.text = palabra + ' ';
         
         utterance.onstart = () => {
             speaking = true;
@@ -285,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
             actualizarResaltadoTurno2P();
             messageDisplay.textContent = `Jugador ${jugadorActual2P}, di cualquier palabra para empezar.`;
             challengeWordDisplay.innerHTML = '---'; // J1 dice la primera palabra, no hay silabaObjetivo aún
-            tiempoRestante = TIEMPO_PRIMER_TURNO_2P;
+            tiempoRestante = tiempoSeleccionado;
             iniciarTemporizador();
             iniciarEscucha();
         }
@@ -452,7 +463,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Mostrar la palabra que acaba de decir el jugador anterior, con su última sílaba (silabaObjetivoGlobal) resaltada
                 resaltarSilabaEnPantalla(palabraAnteriorGlobal, silabaObjetivoGlobal); 
                 palabraProcesadaEnTurnoActual = false; 
-                tiempoRestante = TIEMPO_TURNO_NORMAL;
+                tiempoRestante = tiempoSeleccionado;
                 iniciarTemporizador(); 
                 iniciarEscucha(); 
             }
